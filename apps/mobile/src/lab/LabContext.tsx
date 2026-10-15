@@ -11,7 +11,7 @@ import {
   resetMockTasks,
 } from '../mocks/native';
 import { scenarios, type ScenarioName } from '../mocks/scenarios';
-import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
+import { setRequestLogCallback } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
 
@@ -101,7 +101,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
               ...entry,
               source,
               handler,
-              scenario: scenarioRef.current,
+              scenario: scenarioRef.current ?? undefined,
             },
             ...prev,
           ].slice(0, 50);
@@ -119,26 +119,11 @@ export function LabProvider({ children }: { children: ReactNode }) {
       requestSourcesRef.current.set(requestId, { source, handler });
     });
 
-    // Callback for client.ts to check current data source
-    setDataSourceGetter(() => dataSourceRef.current);
-
     return () => {
       setRequestLogCallback(() => {});
       setRequestSourceCallback(null);
-      setDataSourceGetter(() => ({
-        source: 'real',
-        scenario: null,
-      }));
     };
   }, []);
-
-  // Provide data source getter for request stamping
-  useEffect(() => {
-    setDataSourceGetter(() => ({
-      source: dataSourceRef.current,
-      scenario: scenarioRef.current,
-    }));
-  }, [dataSource, scenario]);
 
   // Load persisted state on mount BEFORE first query
   useEffect(() => {

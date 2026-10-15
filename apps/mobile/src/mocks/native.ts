@@ -22,45 +22,44 @@ function getCurrentScenario() {
 
 export async function startMocking() {
   // Wire up lifecycle events for request source tracking
-  server.events.on('request:start', ({ requestId }: { request: Request; requestId: string }) => {
-    // Track request start with current scenario
-    console.log(
-      `[MSW] request:start requestId=${requestId.slice(0, 30)}..., scenario=${getCurrentScenario()}`
-    );
-    requestMap.set(requestId, {
+  server.events.on('request:start', ({ request }: { request: Request; requestId: string }) => {
+    // Track request start with current scenario - use URL as key
+    const url = request.url;
+    console.log(`[MSW] request:start url=${url.slice(0, 50)}..., scenario=${getCurrentScenario()}`);
+    requestMap.set(url, {
       scenario: getCurrentScenario(),
       startTime: Date.now(),
     });
   });
 
-  server.events.on('response:mocked', ({ requestId }: { requestId: string }) => {
-    const tracked = requestMap.get(requestId);
-    console.log(`[MSW] response:mocked requestId=${requestId.slice(0, 30)}..., tracked=`, tracked);
+  server.events.on('response:mocked', ({ request }: { request: Request }) => {
+    const url = request.url;
+    const tracked = requestMap.get(url);
+    console.log(`[MSW] response:mocked url=${url.slice(0, 50)}..., tracked=`, tracked);
     if (tracked && requestSourceCallback) {
-      requestSourceCallback(requestId, 'msw', tracked.scenario || undefined);
+      requestSourceCallback(url, 'msw', tracked.scenario || undefined);
     }
-    requestMap.delete(requestId);
+    requestMap.delete(url);
   });
 
-  server.events.on('request:unhandled', ({ requestId }: { requestId: string }) => {
-    const tracked = requestMap.get(requestId);
-    console.log(
-      `[MSW] request:unhandled requestId=${requestId.slice(0, 30)}..., tracked=`,
-      tracked
-    );
+  server.events.on('request:unhandled', ({ request }: { request: Request }) => {
+    const url = request.url;
+    const tracked = requestMap.get(url);
+    console.log(`[MSW] request:unhandled url=${url.slice(0, 50)}..., tracked=`, tracked);
     if (tracked && requestSourceCallback) {
-      requestSourceCallback(requestId, 'real', undefined);
+      requestSourceCallback(url, 'real', undefined);
     }
-    requestMap.delete(requestId);
+    requestMap.delete(url);
   });
 
-  server.events.on('response:bypass', ({ requestId }: { requestId: string }) => {
-    const tracked = requestMap.get(requestId);
-    console.log(`[MSW] response:bypass requestId=${requestId.slice(0, 30)}..., tracked=`, tracked);
+  server.events.on('response:bypass', ({ request }: { request: Request }) => {
+    const url = request.url;
+    const tracked = requestMap.get(url);
+    console.log(`[MSW] response:bypass url=${url.slice(0, 50)}..., tracked=`, tracked);
     if (tracked && requestSourceCallback) {
-      requestSourceCallback(requestId, 'real', undefined);
+      requestSourceCallback(url, 'real', undefined);
     }
-    requestMap.delete(requestId);
+    requestMap.delete(url);
   });
 
   server.listen({
