@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, Linking, TouchableOpacity, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import { API_BASE_URL } from '@/src/api/client';
 
 export default function AboutScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
 
@@ -61,6 +63,14 @@ export default function AboutScreen() {
           Learn more
         </Text>
         <TouchableOpacity
+          style={[styles.linkButton, { backgroundColor: colors.surface }]}
+          onPress={() => router.push('/onboarding')}
+          accessibilityRole="button">
+          <Text style={[styles.link, { color: colors.tint }]} maxFontSizeMultiplier={1.2}>
+            🎓 Replay Walkthrough →
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={() => Linking.openURL('https://devxtools.dev')}
           accessibilityRole="link"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -109,6 +119,12 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 16,
     fontWeight: '500',
+    marginBottom: spacing.sm,
+  },
+  linkButton: {
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.sm,
   },
   footer: {
     fontSize: 12,

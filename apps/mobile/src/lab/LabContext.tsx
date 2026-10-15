@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
-import { startMocking, stopMocking, applyScenario, resetHandlers } from '../mocks/native';
+import { startMocking, stopMocking, applyScenario, resetHandlers, setRequestSourceCallback, resetMockTasks } from '../mocks/native';
 import { scenarios, type ScenarioName } from '../mocks/scenarios';
-import { resetMockTasks } from '../mocks/handlers';
+import { setRequestLogCallback } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
 
@@ -64,7 +64,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
   // Wire up request logging callbacks
   useEffect(() => {
     // Callback from client.ts for all HTTP requests
-    setRequestLogCallback((entry) => {
+    setRequestLogCallback((entry: {id: string; timestamp: number; method: string; url: string; status?: number; duration?: number}) => {
       const source = requestSourcesRef.current.get(entry.url);
       const logEntry: RequestLogEntry = {
         ...entry,

@@ -240,6 +240,28 @@ export default function LabModal() {
               ))}
             </View>
           )}
+
+          {/* Add Default / Clear Scenario */}
+          {dataSource === 'msw' && scenario && (
+            <TouchableOpacity
+              style={[styles.clearButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => setScenario(null)}
+              accessibilityRole="button">
+              <Text style={[styles.clearButtonText, { color: colors.text }]}>× Clear Scenario</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Replay Walkthrough */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.linkButton, { backgroundColor: colors.surface }]}
+            onPress={() => router.push('/onboarding')}
+            accessibilityRole="button">
+            <Text style={[styles.linkText, { color: colors.tint }]}>
+              🎓 Replay Walkthrough →
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Links */}
