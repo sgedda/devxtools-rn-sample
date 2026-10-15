@@ -80,8 +80,6 @@ function RootLayoutNav() {
           presentation: 'modal',
           headerShown: true,
           statusBarStyle: 'auto',
-          headerLeftContainerStyle: { paddingLeft: 16 },
-          headerRightContainerStyle: { paddingRight: 16 },
         }}
       />
       <Stack.Screen
@@ -91,8 +89,6 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'Lab',
-          headerLeftContainerStyle: { paddingLeft: 16 },
-          headerRightContainerStyle: { paddingRight: 16 },
         }}
       />
       <Stack.Screen
