@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev:mobile": "npm run start --workspace=apps/mobile",
-    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:api": "npm run dev --workspace=api",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:ci": "npm run test:ci --workspaces --if-present",
@@ -25,6 +25,7 @@
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
     "prettier": "^3.9.10",
+    "puppeteer": "^25.14.0",
     "typescript": "^6.0.3"
   },
   "engines": {

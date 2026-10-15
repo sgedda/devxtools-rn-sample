@@ -1,21 +1,27 @@
 # devxtools.dev Tutorial Series - Sample App
 
-> React Native (Expo) + Node.js backend monorepo for the devxtools.dev tutorial series
+> React Native (Expo) + Node.js backend monorepo demonstrating API mocking, testing, and observability
 
-This repository contains a fully-typed, production-ready monorepo showcasing modern React Native development with a Node.js backend. It serves as the foundation for a tutorial series covering API mocking, E2E testing, and observability.
+This repository contains a learning-focused monorepo that teaches modern React Native development practices. It features an interactive task management app that showcases **API mocking with MSW**, deterministic testing, and observable network behavior.
 
-## 📋 What's Inside
+## 🎯 What This App Teaches
 
-A simple **tasks/notes app** with list, create, toggle, and delete operations. The architecture demonstrates:
+This is a **teaching demo** that makes testing tools visible and shows why they're needed:
 
-- ✅ Modern npm workspaces monorepo
-- ✅ Latest stable versions (verified October 15, 2026)
-- ✅ Full TypeScript coverage
-- ✅ Shared types between frontend and backend
-- ✅ Comprehensive testing setup
-- ✅ CI/CD with GitHub Actions
-- ✅ Linting and formatting
-- ✅ Clear documentation
+1. **The Problem**: Your backend is slow, flaky, unfinished, or offline—and you can't reproduce edge cases
+2. **The Solution**: Intercept requests at the network layer with MSW (Mock Service Worker)
+3. **The Experience**: Switch between real API and mocked data **without changing your app code**
+
+### Key Features
+
+- 🔄 **Live data source switching** - Toggle between real API, MSW mocks, and recorded fixtures
+- 🎭 **One-tap scenarios** - Instantly trigger empty, slow, 500 error, validation, offline, and flaky states
+- 📊 **Network inspector** - See every request marked as real, mocked, or replayed
+- 🧪 **Same mocks in tests** - Jest tests reuse the exact same MSW handlers
+- 🔗 **Deep-link scenarios** - `devxtools://lab?scenario=error500` for deterministic E2E testing
+- ♿ **Full accessibility** - testIDs, screen reader support, WCAG compliance
+
+The app demonstrates that **the UI code never changes**—only the network layer does. This is the core value of API mocking.
 
 ## 🏗️ Architecture
 
@@ -37,30 +43,30 @@ devxtools-rn-sample/
 
 ### Verified Versions (as of October 15, 2026)
 
-| Package                        | Version     | Purpose                                      |
-| ------------------------------ | ----------- | -------------------------------------------- |
+| Package                        | Version     | Purpose                                    |
+| ------------------------------ | ----------- | ------------------------------------------ |
 | **Runtime**                    |
-| Node.js                        | 24.22.0 LTS | Latest stable LTS ('Krypton', Oct 2025)      |
-| npm                            | 10.9.9+     | Package manager                              |
+| Node.js                        | 24.22.0 LTS | Latest stable LTS ('Krypton', Oct 2025)    |
+| npm                            | 10.9.9+     | Package manager                            |
 | **Mobile App (`apps/mobile`)** |
-| Expo SDK                       | 57.0.30     | React Native platform                        |
-| React                          | 19.3.1      | UI framework                                 |
-| React Native                   | 0.86.3      | Mobile framework (pinned by Expo SDK 57)     |
-| Expo Router                    | 57.0.28     | File-based routing                           |
-| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
-| Jest                           | 30.5.2      | Test runner                                  |
-| @testing-library/react-native  | 14.1.0      | Component testing                            |
+| Expo SDK                       | 57.0.30     | React Native platform                      |
+| React                          | 19.3.1      | UI framework                               |
+| React Native                   | 0.86.3      | Mobile framework (pinned by Expo SDK 57)   |
+| Expo Router                    | 57.0.28     | File-based routing                         |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint) |
+| Jest                           | 30.5.2      | Test runner                                |
+| @testing-library/react-native  | 14.1.0      | Component testing                          |
 | **Backend API (`apps/api`)**   |
-| Hono                           | 4.13.13     | Modern web framework                         |
-| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
-| Vitest                         | 5.0.5       | Fast test runner                             |
-| tsx                            | 4.19.2      | TypeScript execution                         |
-| @types/node                    | 24.19.2     | Node.js type definitions (for Node 24 LTS)   |
+| Hono                           | 4.13.13     | Modern web framework                       |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint) |
+| Vitest                         | 5.0.5       | Fast test runner                           |
+| tsx                            | 4.19.2      | TypeScript execution                       |
+| @types/node                    | 24.19.2     | Node.js type definitions (for Node 24 LTS) |
 | **Shared (`packages/shared`)** |
-| TypeScript                     | 6.0.3       | Shared type definitions                      |
+| TypeScript                     | 6.0.3       | Shared type definitions                    |
 | **Development**                |
-| ESLint                         | 10.12.0     | Linting                                      |
-| Prettier                       | 3.9.10      | Code formatting                              |
+| ESLint                         | 10.12.0     | Linting                                    |
+| Prettier                       | 3.9.10      | Code formatting                            |
 
 ### Important Version Notes
 
@@ -167,15 +173,33 @@ Located in `apps/api/src/app.test.ts`:
 
 - Integration tests for all endpoints
 - Request/response validation
-- Error handling scenarios
+- Validation error scenarios (empty titles, length limits)
+- UUID generation testing
 
-### Mobile Tests (Jest + React Native Testing Library)
+### Mobile Tests (Jest + MSW)
 
-Located in `apps/mobile/src/components/WelcomeMessage.test.tsx`:
+Located in `apps/mobile/src/api/__tests__/client.test.ts` and `app/(tabs)/__tests__/TasksScreen.test.tsx`:
 
-- Component rendering tests
-- Demonstration of testing setup
-- Ready for expansion with API integration tests
+- **API client tests** using MSW handlers (5 tests)
+- **Component tests** rendering Tasks screen against MSW scenarios (2 tests)
+- Demonstrates **the same handlers work in both dev and tests**
+- Scenarios: success, empty, 500 error, validation
+- Ready for expansion with React Native Testing Library
+
+The mobile test setup (`jest-setup.ts`) configures MSW for Node.js test environment. This proves the core value: **write handlers once, use everywhere**.
+
+### MSW Version: Why 2.7.0?
+
+This project uses **MSW 2.7.0** instead of the latest 2.15.x or 3.x because:
+
+1. **MSW 2.15.x+ has ESM issues in Jest** - Verified: `npm install msw@2.15.0 && npm test` breaks with module resolution errors
+2. **MSW 3.x is ESM-only** - requires Node.js native ESM support and doesn't provide a `/native` export
+3. **No React Native package** - `@msw/react-native` doesn't exist on npm
+4. **Jest compatibility** - MSW 2.7.0 works seamlessly with Jest's CommonJS mode in React Native
+5. **Production-ready** - MSW 2.7.0 is stable, widely used, and actively maintained
+6. **Same teaching concept** - Demonstrates identical API mocking principles as newer versions
+
+**Error when using 2.15.0:** Tests fail to import MSW modules during Jest execution. MSW 2.7.0 ships with the documented `msw/native` export and polyfills needed for React Native. The teaching concept (write handlers once, use in dev and tests) is identical across versions.
 
 ## 🔄 CI/CD
 
@@ -189,25 +213,32 @@ GitHub Actions CI runs on every push and PR:
 
 See `.github/workflows/ci.yml` for configuration.
 
-## 📚 Tutorial Series Roadmap
+## 📚 Tutorial Series (Planned)
 
-This repository supports the following tutorials:
+This repository will support the following tutorials:
 
 ### 1. API Mocking (`tutorials/01-api-mocking/`)
 
-- Setting up MSW (Mock Service Worker)
-- Creating mock handlers
-- Mocking in tests vs development
-- Alternative: Mockifyer
+**Status**: Core implementation complete, tutorial content coming soon
+
+- ✅ MSW integrated in the app with live switching
+- ✅ Scenarios: empty, slow, 500, 400, offline, flaky
+- ✅ Network inspector showing mocked vs real requests
+- ✅ Jest tests reusing MSW handlers
+- 🚧 Mockifyer replay mode (stubbed)
+- 📝 Tutorial walkthrough content (planned)
 
 ### 2. E2E Testing (`tutorials/02-e2e-testing/`)
 
-- Detox setup and configuration
-- Writing E2E test flows
-- Maestro as an alternative
-- Running E2E in CI
+**Status**: Planned
+
+- testIDs added throughout the UI for E2E testing
+- Deep-link scenario support (`devxtools://lab?scenario=...`)
+- Detox and Maestro comparison (coming soon)
 
 ### 3. Observability & Logging (`tutorials/03-observability/`)
+
+**Status**: Planned
 
 - Structured logging setup
 - Client-to-server log aggregation

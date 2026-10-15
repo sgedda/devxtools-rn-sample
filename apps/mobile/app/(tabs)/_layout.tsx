@@ -1,10 +1,10 @@
 import { SymbolView } from 'expo-symbols';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { TouchableOpacity, Platform, View } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { DataSourcePill } from '@/components/DataSourcePill';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,55 +13,73 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
+        headerShown: true,
+        headerTitleStyle: {
+          fontSize: 17,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
+          title: 'Tasks',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
+                ios: 'list.bullet',
+                android: 'list',
+                web: 'list',
               }}
               tintColor={color}
-              size={28}
+              size={24}
             />
           ),
           headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable style={{ marginRight: 15 }}>
-                {({ pressed }) => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <DataSourcePill />
+              <Link href="/modal" asChild>
+                <TouchableOpacity
+                  style={{
+                    marginRight: Platform.OS === 'ios' ? 16 : 20,
+                    padding: 8,
+                    minWidth: 44,
+                    minHeight: 44,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add task"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
                   <SymbolView
-                    name={{ ios: 'info.circle', android: 'info', web: 'info' }}
-                    size={25}
-                    tintColor={Colors[colorScheme].text}
-                    style={{ opacity: pressed ? 0.5 : 1 }}
+                    name={{
+                      ios: 'plus',
+                      android: 'add',
+                      web: 'add',
+                    }}
+                    tintColor={Colors[colorScheme].tint}
+                    size={22}
                   />
-                )}
-              </Pressable>
-            </Link>
+                </TouchableOpacity>
+              </Link>
+            </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="about"
         options={{
-          title: 'Tab Two',
+          title: 'About',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
+                ios: 'info.circle',
+                android: 'info',
+                web: 'info',
               }}
               tintColor={color}
-              size={28}
+              size={24}
             />
           ),
         }}

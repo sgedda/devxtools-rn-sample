@@ -1,13 +1,14 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
+import { randomUUID } from 'crypto';
 import type { Task } from '@devxtools/shared';
 
 // In-memory store for demo purposes
 const tasks: Task[] = [
   {
-    id: '1',
-    title: 'Welcome to devxtools.dev sample app',
+    id: randomUUID(),
+    title: 'Tap the circle to complete me, swipe left to delete',
     completed: false,
     createdAt: new Date().toISOString(),
   },
@@ -57,9 +58,19 @@ app.post('/tasks', async c => {
     return c.json({ error: 'Title is required' }, 400);
   }
 
+  const title = body.title.trim();
+
+  if (title.length === 0) {
+    return c.json({ error: 'Title cannot be empty' }, 400);
+  }
+
+  if (title.length > 200) {
+    return c.json({ error: 'Title must be 200 characters or less' }, 400);
+  }
+
   const newTask: Task = {
-    id: String(Date.now()),
-    title: body.title,
+    id: randomUUID(),
+    title,
     completed: false,
     createdAt: new Date().toISOString(),
   };
@@ -80,8 +91,19 @@ app.patch('/tasks/:id', async c => {
   if (typeof body.completed === 'boolean') {
     task.completed = body.completed;
   }
+
   if (typeof body.title === 'string') {
-    task.title = body.title;
+    const title = body.title.trim();
+
+    if (title.length === 0) {
+      return c.json({ error: 'Title cannot be empty' }, 400);
+    }
+
+    if (title.length > 200) {
+      return c.json({ error: 'Title must be 200 characters or less' }, 400);
+    }
+
+    task.title = title;
   }
 
   return c.json({ task });
