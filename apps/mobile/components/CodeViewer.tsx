@@ -58,7 +58,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
               style={[styles.link, { backgroundColor: colors.surface }]}
               onPress={() =>
                 Linking.openURL(
-                  `https://github.com/sgedda/devxtools-rn-sample/blob/cursor/implement-ux-review-e0f5/apps/mobile/src/mocks/scenarios.ts#L${snippet.line}`
+                  `https://github.com/sgedda/devxtools-rn-sample/blob/main/apps/mobile/src/mocks/scenarios.ts#L${snippet.line}`
                 )
               }
               accessibilityRole="link"

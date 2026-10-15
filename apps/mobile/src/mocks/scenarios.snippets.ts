@@ -41,13 +41,13 @@ export const SCENARIO_SNIPPETS: Record<ScenarioName, { code: string; line: numbe
     { status: 400 }
   );
 });`,
-    line: 40,
+    line: 37,
   },
   offline: {
     code: `http.get('*/tasks', async () => {
   return HttpResponse.error();
 });`,
-    line: 50,
+    line: 44,
   },
   flaky: {
     code: `http.get('*/tasks', async () => {
@@ -69,6 +69,6 @@ export const SCENARIO_SNIPPETS: Record<ScenarioName, { code: string; line: numbe
     ],
   });
 });`,
-    line: 58,
+    line: 52,
   },
 };

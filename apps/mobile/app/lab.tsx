@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   showCodeText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '500',
   },
   logContainer: {

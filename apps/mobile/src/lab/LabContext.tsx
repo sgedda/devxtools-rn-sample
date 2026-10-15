@@ -82,7 +82,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
         status?: number;
         duration?: number;
       }) => {
-        const source = requestSourcesRef.current.get(entry.url);
+        const source = requestSourcesRef.current.get(entry.id);
         const logEntry: RequestLogEntry = {
           ...entry,
           source: source?.source || 'real',
