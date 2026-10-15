@@ -87,6 +87,11 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   const startTime = Date.now();
   const method = options.method || 'GET';
 
+  // Log the request START with current context
+  const contextData = dataSourceGetter?.() || { source: 'real', scenario: null };
+  const requestSource = contextData.source === 'mockifyer' ? 'real' : contextData.source;
+  const requestScenario = contextData.scenario;
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -94,11 +99,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
     });
     clearTimeout(timeoutId);
 
-    // Get the source and scenario at response time
-    const contextData = dataSourceGetter?.() || { source: 'real', scenario: null };
-    const source = contextData.source === 'mockifyer' ? 'real' : contextData.source;
-
-    // Log the response
+    // Log the response with the captured context from request start
     const duration = Date.now() - startTime;
     if (requestLogCallback) {
       requestLogCallback({
@@ -108,8 +109,8 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
         url,
         status: response.status,
         duration,
-        source,
-        scenario: contextData.scenario || undefined,
+        source: requestSource,
+        scenario: requestScenario || undefined,
       });
     }
 
