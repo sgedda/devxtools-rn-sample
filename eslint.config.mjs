@@ -42,6 +42,7 @@ export default [
       '**/*.test.tsx',
       'apps/mobile/jest-setup.ts',
       'apps/mobile/jest.config.js',
+      'apps/mobile/babel.config.js',
       'apps/mobile/src/mocks/server.test-setup.ts',
     ],
   },

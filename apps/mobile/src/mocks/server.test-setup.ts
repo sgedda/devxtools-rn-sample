@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { handlers } from '../mocks/handlers';
 
@@ -12,3 +13,6 @@ afterEach(() => server.resetHandlers());
 
 // Clean up after all tests
 afterAll(() => server.close());
+
+export { http, HttpResponse };
+

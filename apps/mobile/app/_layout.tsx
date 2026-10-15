@@ -1,7 +1,6 @@
 import { useFonts } from 'expo-font';
 import { Stack, SplashScreen } from 'expo-router';
 import { useEffect } from 'react';
-import { Linking } from 'react-native';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -58,26 +57,6 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
-  // Handle deep links for lab scenarios
-  useEffect(() => {
-    const handleDeepLink = (event: { url: string }) => {
-      const url = event.url;
-      console.log('[Deep Link]', url);
-      // Deep link handling will be processed in the lab modal
-    };
-
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-
-    // Handle initial URL if app was opened via deep link
-    Linking.getInitialURL().then(url => {
-      if (url) {
-        handleDeepLink({ url });
-      }
-    });
-
-    return () => subscription.remove();
-  }, []);
-
   return (
     <Stack
       screenOptions={{
@@ -107,9 +86,10 @@ function RootLayoutNav() {
       <Stack.Screen
         name="onboarding"
         options={{
-          presentation: 'modal',
+          presentation: 'fullScreenModal',
           headerShown: false,
           gestureEnabled: false,
+          animation: 'fade',
         }}
       />
     </Stack>

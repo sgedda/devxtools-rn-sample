@@ -1,8 +1,9 @@
-/* eslint-env jest */
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import '@testing-library/react-native/extend-expect';
+/// <reference types="@testing-library/react-native" />
+/// <reference types="jest" />
 import './src/mocks/server.test-setup';
+
+// Polyfills for React Native
+global.setImmediate = global.setImmediate || ((fn, ...args) => global.setTimeout(fn, 0, ...args));
 
 // Mock expo-constants
 jest.mock('expo-constants', () => ({
@@ -16,9 +17,9 @@ jest.mock('expo-constants', () => ({
 
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn(async () => {}),
+  impactAsync: jest.fn(async () => {}),
+  notificationAsync: jest.fn(async () => {}),
   ImpactFeedbackStyle: { Medium: 'medium' },
   NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
@@ -28,14 +29,27 @@ jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => jest.fn()),
 }));
 
+// Mock @react-native-async-storage/async-storage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(async () => {}),
+  getItem: jest.fn(async () => null),
+  removeItem: jest.fn(async () => {}),
+}));
+
 // Mock react-native-gesture-handler
 jest.mock('react-native-gesture-handler', () => {
-  const View = require('react-native').View;
+  const View = require('react-native/Libraries/Components/View/View');
   return {
     Swipeable: View,
     GestureHandlerRootView: View,
   };
 });
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaProvider: ({ children }: any) => children,
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -55,8 +69,15 @@ jest.mock('expo-symbols', () => ({
 }));
 
 // Silence console warnings during tests
-global.console = {
-  ...console,
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+const originalWarn = console.warn;
+const originalError = console.error;
+
+beforeAll(() => {
+  console.warn = jest.fn();
+  console.error = jest.fn();
+});
+
+afterAll(() => {
+  console.warn = originalWarn;
+  console.error = originalError;
+});
