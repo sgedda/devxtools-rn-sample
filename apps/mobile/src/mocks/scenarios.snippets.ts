@@ -69,6 +69,6 @@ export const SCENARIO_SNIPPETS: Record<ScenarioName, { code: string; line: numbe
     ],
   });
 });`,
-    line: 56,
+    line: 57,
   },
 };
