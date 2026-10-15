@@ -26,12 +26,22 @@ type RequestLogCallback = (entry: {
   url: string;
   status?: number;
   duration?: number;
+  source?: 'real' | 'msw';
+  scenario?: string;
 }) => void;
 
 let requestLogCallback: RequestLogCallback | null = null;
 
 export function setRequestLogCallback(callback: RequestLogCallback | null) {
   requestLogCallback = callback;
+}
+
+// Get current data source and scenario for stamping requests
+type DataSourceGetter = () => { source: 'real' | 'msw' | 'mockifyer'; scenario: string | null };
+let dataSourceGetter: DataSourceGetter | null = null;
+
+export function setDataSourceGetter(getter: DataSourceGetter | null) {
+  dataSourceGetter = getter;
 }
 
 function getApiUrl(): string {
@@ -84,6 +94,10 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
     });
     clearTimeout(timeoutId);
 
+    // Get the source and scenario at response time
+    const contextData = dataSourceGetter?.() || { source: 'real', scenario: null };
+    const source = contextData.source === 'mockifyer' ? 'real' : contextData.source;
+
     // Log the response
     const duration = Date.now() - startTime;
     if (requestLogCallback) {
@@ -94,6 +108,8 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
         url,
         status: response.status,
         duration,
+        source,
+        scenario: contextData.scenario || undefined,
       });
     }
 
