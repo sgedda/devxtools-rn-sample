@@ -72,15 +72,20 @@ export const flakyScenario: RequestHandler[] = [
   }),
 ];
 
+export interface Scenario {
+  name: string;
+  handlers: RequestHandler[];
+}
+
 export type ScenarioName = 'empty' | 'slow' | 'error500' | 'validation400' | 'offline' | 'flaky';
 
-export const scenarios: Record<ScenarioName, RequestHandler[]> = {
-  empty: emptyScenario,
-  slow: slowScenario,
-  error500: error500Scenario,
-  validation400: validation400Scenario,
-  offline: offlineScenario,
-  flaky: flakyScenario,
+export const scenarios: Record<ScenarioName, Scenario> = {
+  empty: { name: 'empty', handlers: emptyScenario },
+  slow: { name: 'slow', handlers: slowScenario },
+  error500: { name: 'error500', handlers: error500Scenario },
+  validation400: { name: 'validation400', handlers: validation400Scenario },
+  offline: { name: 'offline', handlers: offlineScenario },
+  flaky: { name: 'flaky', handlers: flakyScenario },
 };
 
 // Reset flaky counter when switching scenarios

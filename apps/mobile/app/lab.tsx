@@ -21,7 +21,7 @@ export default function LabModal() {
     if (params.scenario && params.scenario in scenarios) {
       selectScenario(params.scenario as ScenarioName);
     }
-  }, [params.scenario]);
+  }, [params.scenario, selectScenario]);
 
   const handleDataSourceChange = (source: 'real' | 'msw') => {
     setDataSource(source);
@@ -34,14 +34,6 @@ export default function LabModal() {
   const handleShowCode = (scenarioKey: ScenarioName) => {
     setSelectedScenario(scenarioKey);
     setShowCodeViewer(true);
-  };
-
-  const handleClose = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/');
-    }
   };
 
   return (

@@ -7,9 +7,10 @@ import {
   applyScenario,
   resetHandlers,
   setRequestSourceCallback,
+  setCurrentScenario,
   resetMockTasks,
 } from '../mocks/native';
-import { scenarios, scenarioLabels, type ScenarioName } from '../mocks/scenarios';
+import { scenarios, type ScenarioName } from '../mocks/scenarios';
 import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
@@ -102,9 +103,12 @@ export function LabProvider({ children }: { children: ReactNode }) {
     });
 
     return () => {
-      setRequestLogCallback(null);
+      setRequestLogCallback(() => {});
       setRequestSourceCallback(null);
-      setDataSourceGetter(null);
+      setDataSourceGetter(() => ({
+        source: 'real',
+        scenario: null,
+      }));
     };
   }, []);
 
@@ -136,8 +140,11 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
         if (savedScenario && savedSource === 'msw') {
           setScenarioState(savedScenario as ScenarioName);
+          scenarioRef.current = savedScenario as ScenarioName;
           // Apply the scenario BEFORE rendering
-          applyScenario(scenarios[savedScenario as ScenarioName]);
+          const scenarioObj = scenarios[savedScenario as ScenarioName];
+          applyScenario(scenarioObj.handlers);
+          setCurrentScenario(scenarioObj.name);
         }
 
         if (walkthroughComplete === 'true') {
@@ -168,7 +175,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
       if (scenario) {
         resetHandlers();
         resetMockTasks();
-        applyScenario(scenarios[scenario]);
+        const scenarioObj = scenarios[scenario];
+        applyScenario(scenarioObj.handlers);
+        setCurrentScenario(scenarioObj.name);
       }
     } else {
       stopMocking();
@@ -195,9 +204,12 @@ export function LabProvider({ children }: { children: ReactNode }) {
       if (newScenario) {
         resetHandlers();
         resetMockTasks();
-        applyScenario(scenarios[newScenario]);
+        const scenarioObj = scenarios[newScenario];
+        applyScenario(scenarioObj.handlers);
+        setCurrentScenario(scenarioObj.name);
       } else {
         resetHandlers();
+        setCurrentScenario(null);
         resetMockTasks();
       }
 
@@ -222,10 +234,13 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     // Now apply the scenario
     setScenarioState(newScenario);
+    scenarioRef.current = newScenario;
     await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
     resetHandlers();
     resetMockTasks();
-    applyScenario(scenarios[newScenario]);
+    const scenarioObj = scenarios[newScenario];
+    applyScenario(scenarioObj.handlers);
+    setCurrentScenario(scenarioObj.name);
 
     // Reset queries after log is cleared
     queryClient.resetQueries({ queryKey: ['tasks'] });
