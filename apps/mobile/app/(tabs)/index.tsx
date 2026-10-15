@@ -20,7 +20,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLab } from '@/src/lab/LabContext';
-import { scenarioLabels } from '@/src/mocks/scenarios';
 
 type UndoAction = {
   type: 'delete';
