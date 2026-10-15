@@ -26,6 +26,10 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
   if (!scenario) return null;
 
   const snippet = SCENARIO_SNIPPETS[scenario];
+  
+  if (!snippet) {
+    return null;
+  }
 
   return (
     <Modal
@@ -47,7 +51,9 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
 
         <ScrollView style={styles.content}>
           <View style={[styles.codeBlock, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.code, { color: colors.text }]}>{snippet.code}</Text>
+            <Text style={[styles.code, { color: colors.text }]}>
+              {typeof snippet.code === 'string' ? snippet.code : JSON.stringify(snippet.code)}
+            </Text>
           </View>
 
           <View style={styles.section}>
