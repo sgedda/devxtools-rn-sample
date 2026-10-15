@@ -190,15 +190,16 @@ The mobile test setup (`jest-setup.ts`) configures MSW for Node.js test environm
 
 ### MSW Version: Why 2.7.0?
 
-This project uses **MSW 2.7.0** instead of the latest 3.x because:
+This project uses **MSW 2.7.0** instead of the latest 2.15.x or 3.x because:
 
-1. **MSW 3.x is ESM-only** - requires Node.js native ESM support and doesn't provide a `/native` export
-2. **No React Native package** - `@msw/react-native` doesn't exist on npm
-3. **Jest compatibility** - MSW 2.x works seamlessly with Jest's CommonJS mode in React Native
-4. **Production-ready** - MSW 2.x is stable, widely used, and actively maintained
-5. **Same teaching concept** - Demonstrates identical API mocking principles as 3.x
+1. **MSW 2.15.x+ has ESM issues in Jest** - Verified: `npm install msw@2.15.0 && npm test` breaks with module resolution errors
+2. **MSW 3.x is ESM-only** - requires Node.js native ESM support and doesn't provide a `/native` export
+3. **No React Native package** - `@msw/react-native` doesn't exist on npm
+4. **Jest compatibility** - MSW 2.7.0 works seamlessly with Jest's CommonJS mode in React Native
+5. **Production-ready** - MSW 2.7.0 is stable, widely used, and actively maintained
+6. **Same teaching concept** - Demonstrates identical API mocking principles as newer versions
 
-MSW 2.7.0 ships with the documented `msw/native` export and polyfills needed for React Native. The teaching concept (write handlers once, use in dev and tests) is identical across versions.
+**Error when using 2.15.0:** Tests fail to import MSW modules during Jest execution. MSW 2.7.0 ships with the documented `msw/native` export and polyfills needed for React Native. The teaching concept (write handlers once, use in dev and tests) is identical across versions.
 
 ## 🔄 CI/CD
 
