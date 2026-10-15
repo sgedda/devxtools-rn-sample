@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import { useLab, type DataSource } from '@/src/lab/LabContext';
 import { scenarios, scenarioLabels, type ScenarioName } from '@/src/mocks/scenarios';
+import { CodeViewer } from '@/components/CodeViewer';
 
 export default function LabModal() {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function LabModal() {
   const colors = Colors[colorScheme];
   const { dataSource, scenario, setDataSource, setScenario, requestLog } = useLab();
   const params = useLocalSearchParams<{ scenario?: string }>();
+  const [showCodeViewer, setShowCodeViewer] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();
 
   // Handle deep link scenario parameter
   useEffect(() => {
@@ -40,6 +43,11 @@ export default function LabModal() {
       setDataSource('msw');
     }
     setScenario(scenario === newScenario ? null : newScenario);
+  };
+
+  const handleShowCode = (scenarioKey: ScenarioName) => {
+    setSelectedScenario(scenarioKey);
+    setShowCodeViewer(true);
   };
 
   return (
@@ -120,36 +128,48 @@ export default function LabModal() {
 
           <View style={styles.chipContainer}>
             {(Object.keys(scenarios) as ScenarioName[]).map(scenarioKey => (
-              <TouchableOpacity
-                key={scenarioKey}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor:
-                      scenario === scenarioKey ? colors.tint : colors.surface,
-                    borderColor: scenario === scenarioKey ? colors.tint : colors.border,
-                  },
-                  dataSource === 'real' && styles.chipDisabled,
-                ]}
-                onPress={() => handleScenarioChange(scenarioKey)}
-                disabled={dataSource === 'real'}
-                accessibilityRole="button"
-                accessibilityState={{ selected: scenario === scenarioKey }}>
-                <Text
+              <View key={scenarioKey} style={styles.chipWrapper}>
+                <TouchableOpacity
                   style={[
-                    styles.chipText,
+                    styles.chip,
                     {
-                      color:
-                        scenario === scenarioKey
-                          ? '#fff'
-                          : dataSource === 'real'
-                            ? colors.muted
-                            : colors.text,
+                      backgroundColor:
+                        scenario === scenarioKey ? colors.tint : colors.surface,
+                      borderColor: scenario === scenarioKey ? colors.tint : colors.border,
                     },
-                  ]}>
-                  {scenarioLabels[scenarioKey]}
-                </Text>
-              </TouchableOpacity>
+                    dataSource === 'real' && styles.chipDisabled,
+                  ]}
+                  onPress={() => handleScenarioChange(scenarioKey)}
+                  disabled={dataSource === 'real'}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: scenario === scenarioKey }}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      {
+                        color:
+                          scenario === scenarioKey
+                            ? '#fff'
+                            : dataSource === 'real'
+                              ? colors.muted
+                              : colors.text,
+                      },
+                    ]}>
+                    {scenarioLabels[scenarioKey]}
+                  </Text>
+                </TouchableOpacity>
+                {dataSource === 'msw' && (
+                  <TouchableOpacity
+                    onPress={() => handleShowCode(scenarioKey)}
+                    style={styles.showCodeButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Show code for ${scenarioLabels[scenarioKey]}`}>
+                    <Text style={[styles.showCodeText, { color: colors.tint }]}>
+                      Show code
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             ))}
           </View>
         </View>
@@ -236,6 +256,12 @@ export default function LabModal() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <CodeViewer
+        visible={showCodeViewer}
+        onClose={() => setShowCodeViewer(false)}
+        scenario={selectedScenario}
+      />
     </>
   );
 }
@@ -297,6 +323,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
+  chipWrapper: {
+    alignItems: 'center',
+  },
   chip: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -308,6 +337,13 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
+    fontWeight: '500',
+  },
+  showCodeButton: {
+    marginTop: 4,
+  },
+  showCodeText: {
+    fontSize: 11,
     fontWeight: '500',
   },
   logContainer: {
