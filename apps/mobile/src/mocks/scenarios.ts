@@ -48,6 +48,11 @@ export const offlineScenario: RequestHandler[] = [
 
 // Scenario: Flaky (fails 1 in 3 requests)
 let flakyCounter = 0;
+
+export function resetFlakyCounter() {
+  flakyCounter = 0;
+}
+
 export const flakyScenario: RequestHandler[] = [
   http.get('*/tasks', async () => {
     flakyCounter++;
@@ -77,6 +82,11 @@ export const scenarios: Record<ScenarioName, RequestHandler[]> = {
   offline: offlineScenario,
   flaky: flakyScenario,
 };
+
+// Reset flaky counter when switching scenarios
+export function resetScenarioState() {
+  resetFlakyCounter();
+}
 
 export const scenarioLabels: Record<ScenarioName, string> = {
   empty: 'Empty',

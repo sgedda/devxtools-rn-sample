@@ -84,8 +84,9 @@ export default function LabModal() {
                   },
                 ]}
                 onPress={() => handleDataSourceChange(source)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: dataSource === source }}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: dataSource === source }}
+                accessibilityLabel={source === 'real' ? 'Real API' : 'Mock Service Worker'}
               >
                 <Text
                   style={[
@@ -131,8 +132,9 @@ export default function LabModal() {
                   ]}
                   onPress={() => handleScenarioChange(scenarioKey)}
                   disabled={dataSource === 'real'}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: scenario === scenarioKey }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: scenario === scenarioKey }}
+                  accessibilityLabel={`Scenario: ${scenarioLabels[scenarioKey]}`}
                 >
                   <Text
                     style={[
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   showCodeText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '500',
   },
   logContainer: {
