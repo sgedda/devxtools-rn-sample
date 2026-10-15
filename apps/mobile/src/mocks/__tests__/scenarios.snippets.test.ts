@@ -12,7 +12,7 @@ describe('scenarios.snippets', () => {
       'flaky',
     ];
 
-    expectedScenarios.forEach((scenario) => {
+    expectedScenarios.forEach(scenario => {
       const snippet = SCENARIO_SNIPPETS[scenario];
       expect(snippet).toBeDefined();
       expect(snippet.code).toBeDefined();
