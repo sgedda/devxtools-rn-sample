@@ -85,7 +85,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
         scenario?: string;
       }) => {
         // Get the actual source from MSW lifecycle events if available
-        const mswSource = requestSourcesRef.current.get(entry.id);
+        // MSW lifecycle events use URL as key
+        const mswSource = requestSourcesRef.current.get(entry.url);
         const logEntry: RequestLogEntry = {
           ...entry,
           source: mswSource?.source || entry.source || 'real',

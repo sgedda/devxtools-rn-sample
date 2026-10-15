@@ -81,7 +81,6 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'New Task',
-          headerLeftContainerStyle: { paddingLeft: 16 },
         }}
       />
       <Stack.Screen
@@ -91,7 +90,6 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'Lab',
-          headerLeftContainerStyle: { paddingLeft: 16 },
         }}
       />
       <Stack.Screen
