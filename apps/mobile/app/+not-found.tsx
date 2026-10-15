@@ -23,7 +23,8 @@ export default function NotFoundScreen() {
             style={[styles.button, { backgroundColor: colors.tint }]}
             accessibilityRole="button"
             accessibilityLabel="Back to tasks"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Text style={styles.buttonText} maxFontSizeMultiplier={1.2}>
               Back to tasks
             </Text>

@@ -28,20 +28,14 @@ export const slowScenario: RequestHandler[] = [
 // Scenario: Server error 500
 export const error500Scenario: RequestHandler[] = [
   http.get('*/tasks', async () => {
-    return HttpResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return HttpResponse.json({ error: 'Internal server error' }, { status: 500 });
   }),
 ];
 
 // Scenario: Validation error 400
 export const validation400Scenario: RequestHandler[] = [
   http.post('*/tasks', async () => {
-    return HttpResponse.json(
-      { error: 'Title cannot be empty' },
-      { status: 400 }
-    );
+    return HttpResponse.json({ error: 'Title cannot be empty' }, { status: 400 });
   }),
 ];
 
@@ -58,10 +52,7 @@ export const flakyScenario: RequestHandler[] = [
   http.get('*/tasks', async () => {
     flakyCounter++;
     if (flakyCounter % 3 === 0) {
-      return HttpResponse.json(
-        { error: 'Service temporarily unavailable' },
-        { status: 503 }
-      );
+      return HttpResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
     }
     return HttpResponse.json({
       tasks: [

@@ -1,7 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
-import { startMocking, stopMocking, applyScenario, resetHandlers, setRequestSourceCallback, resetMockTasks } from '../mocks/native';
+import {
+  startMocking,
+  stopMocking,
+  applyScenario,
+  resetHandlers,
+  setRequestSourceCallback,
+  resetMockTasks,
+} from '../mocks/native';
 import { scenarios, type ScenarioName } from '../mocks/scenarios';
 import { setRequestLogCallback } from '../api/client';
 
@@ -50,7 +57,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const dataSourceRef = useRef<DataSource>('real');
   const scenarioRef = useRef<ScenarioName | null>(null);
-  const requestSourcesRef = useRef<Map<string, { source: 'msw' | 'real'; handler?: string }>>(new Map());
+  const requestSourcesRef = useRef<Map<string, { source: 'msw' | 'real'; handler?: string }>>(
+    new Map()
+  );
 
   // Keep refs in sync
   useEffect(() => {
@@ -64,16 +73,25 @@ export function LabProvider({ children }: { children: ReactNode }) {
   // Wire up request logging callbacks
   useEffect(() => {
     // Callback from client.ts for all HTTP requests
-    setRequestLogCallback((entry: {id: string; timestamp: number; method: string; url: string; status?: number; duration?: number}) => {
-      const source = requestSourcesRef.current.get(entry.url);
-      const logEntry: RequestLogEntry = {
-        ...entry,
-        source: source?.source || 'real',
-        handler: source?.handler,
-        scenario: scenarioRef.current || undefined,
-      };
-      setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
-    });
+    setRequestLogCallback(
+      (entry: {
+        id: string;
+        timestamp: number;
+        method: string;
+        url: string;
+        status?: number;
+        duration?: number;
+      }) => {
+        const source = requestSourcesRef.current.get(entry.url);
+        const logEntry: RequestLogEntry = {
+          ...entry,
+          source: source?.source || 'real',
+          handler: source?.handler,
+          scenario: scenarioRef.current || undefined,
+        };
+        setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
+      }
+    );
 
     // Callback from MSW lifecycle events
     setRequestSourceCallback((requestId: string, source: 'msw' | 'real', handler?: string) => {
@@ -228,7 +246,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
         hasCompletedWalkthrough,
         completeWalkthrough,
         labReady,
-      }}>
+      }}
+    >
       {labReady ? children : null}
     </LabContext.Provider>
   );

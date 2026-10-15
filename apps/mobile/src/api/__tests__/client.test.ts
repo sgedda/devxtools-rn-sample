@@ -14,10 +14,7 @@ describe('API Client with MSW', () => {
   it('should handle 500 server error', async () => {
     server.use(
       http.get('*/tasks', () => {
-        return HttpResponse.json(
-          { error: 'Internal server error' },
-          { status: 500 }
-        );
+        return HttpResponse.json({ error: 'Internal server error' }, { status: 500 });
       })
     );
 

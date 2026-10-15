@@ -1,4 +1,12 @@
-import { View, Text, StyleSheet, ScrollView, Linking, TouchableOpacity, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Linking,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
@@ -12,7 +20,8 @@ export default function AboutScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}>
+      contentContainerStyle={styles.content}
+    >
       <Text style={[styles.title, { color: colors.text }]} maxFontSizeMultiplier={1.4}>
         DevX Tasks
       </Text>
@@ -26,8 +35,8 @@ export default function AboutScreen() {
         </Text>
         <Text style={[styles.text, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
           This is a sample task management app built for the devxtools.dev tutorial series. It
-          demonstrates modern React Native development with Expo, showcasing API integration,
-          state management, accessibility features, and polished UX.
+          demonstrates modern React Native development with Expo, showcasing API integration, state
+          management, accessibility features, and polished UX.
         </Text>
       </View>
 
@@ -36,13 +45,9 @@ export default function AboutScreen() {
           Features
         </Text>
         <Text style={[styles.text, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
-          • Create, complete, and delete tasks{'\n'}
-          • Swipe to delete with undo{'\n'}
-          • Pull to refresh{'\n'}
-          • Offline detection{'\n'}
-          • Haptic feedback{'\n'}
-          • Optimistic updates{'\n'}
-          • Full accessibility support
+          • Create, complete, and delete tasks{'\n'}• Swipe to delete with undo{'\n'}• Pull to
+          refresh{'\n'}• Offline detection{'\n'}• Haptic feedback{'\n'}• Optimistic updates{'\n'}•
+          Full accessibility support
         </Text>
       </View>
 
@@ -65,7 +70,8 @@ export default function AboutScreen() {
         <TouchableOpacity
           style={[styles.linkButton, { backgroundColor: colors.surface }]}
           onPress={() => router.push('/onboarding')}
-          accessibilityRole="button">
+          accessibilityRole="button"
+        >
           <Text style={[styles.link, { color: colors.tint }]} maxFontSizeMultiplier={1.2}>
             🎓 Replay Walkthrough →
           </Text>
@@ -73,7 +79,8 @@ export default function AboutScreen() {
         <TouchableOpacity
           onPress={() => Linking.openURL('https://devxtools.dev')}
           accessibilityRole="link"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={[styles.link, { color: colors.tint }]} maxFontSizeMultiplier={1.2}>
             Visit devxtools.dev →
           </Text>
@@ -81,8 +88,7 @@ export default function AboutScreen() {
       </View>
 
       <Text style={[styles.footer, { color: colors.muted }]} maxFontSizeMultiplier={1.1}>
-        Built with Expo {'\n'}
-        © 2026 devxtools.dev
+        Built with Expo {'\n'}© 2026 devxtools.dev
       </Text>
     </ScrollView>
   );

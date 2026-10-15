@@ -113,7 +113,8 @@ export default function NewTaskModal() {
               accessibilityRole="button"
               accessibilityLabel="Cancel"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              disabled={createMutation.isPending}>
+              disabled={createMutation.isPending}
+            >
               <Text style={[styles.headerButton, { color: colors.tint }]}>Cancel</Text>
             </TouchableOpacity>
           ),
@@ -123,7 +124,8 @@ export default function NewTaskModal() {
               disabled={!canSave || createMutation.isPending}
               accessibilityRole="button"
               accessibilityLabel="Save task"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               {createMutation.isPending ? (
                 <ActivityIndicator size="small" color={colors.tint} />
               ) : (
@@ -132,7 +134,8 @@ export default function NewTaskModal() {
                     styles.headerButton,
                     styles.headerButtonSave,
                     { color: canSave ? colors.tint : colors.muted },
-                  ]}>
+                  ]}
+                >
                   Save
                 </Text>
               )}
@@ -143,10 +146,12 @@ export default function NewTaskModal() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={[styles.container, { backgroundColor: colors.background }]}
-        keyboardVerticalOffset={100}>
+        keyboardVerticalOffset={100}
+      >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled">
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.form}>
             <Text style={[styles.label, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
               Task title
@@ -183,7 +188,8 @@ export default function NewTaskModal() {
                     style={[styles.errorText, { color: colors.danger }]}
                     maxFontSizeMultiplier={1.2}
                     accessibilityLiveRegion="polite"
-                    accessibilityRole="alert">
+                    accessibilityRole="alert"
+                  >
                     {error}
                   </Text>
                 )}
@@ -192,11 +198,11 @@ export default function NewTaskModal() {
                 style={[
                   styles.characterCount,
                   {
-                    color:
-                      title.length > MAX_TITLE_LENGTH ? colors.danger : colors.muted,
+                    color: title.length > MAX_TITLE_LENGTH ? colors.danger : colors.muted,
                   },
                 ]}
-                maxFontSizeMultiplier={1.1}>
+                maxFontSizeMultiplier={1.1}
+              >
                 {title.length}/{MAX_TITLE_LENGTH}
               </Text>
             </View>

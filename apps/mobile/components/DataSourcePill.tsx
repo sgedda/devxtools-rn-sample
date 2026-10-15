@@ -52,7 +52,8 @@ export function DataSourcePill() {
       onPress={() => router.push('/lab')}
       accessibilityRole="button"
       accessibilityLabel={getAccessibilityLabel()}
-      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
       <View style={[styles.indicator, { backgroundColor: getColor() }]} />
       <Text style={[styles.label, { color: colors.text }]}>{getLabel()}</Text>
     </TouchableOpacity>

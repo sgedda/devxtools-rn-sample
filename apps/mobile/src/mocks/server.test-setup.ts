@@ -15,4 +15,3 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 export { http, HttpResponse };
-

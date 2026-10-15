@@ -24,8 +24,7 @@ describe('scenarios.snippets', () => {
 
   it('should contain http.get or http.post in code snippets', () => {
     Object.entries(SCENARIO_SNIPPETS).forEach(([scenarioName, snippet]) => {
-      const hasHttpMethod =
-        snippet.code.includes('http.get') || snippet.code.includes('http.post');
+      const hasHttpMethod = snippet.code.includes('http.get') || snippet.code.includes('http.post');
       expect(hasHttpMethod).toBe(true);
     });
   });

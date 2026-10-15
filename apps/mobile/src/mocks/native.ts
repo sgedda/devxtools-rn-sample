@@ -60,7 +60,9 @@ server.events.on('response:bypass', ({ request }) => {
   }
 });
 
-export function getRequestSource(requestId: string): { source: 'msw' | 'real'; handler?: string } | null {
+export function getRequestSource(
+  requestId: string
+): { source: 'msw' | 'real'; handler?: string } | null {
   return requestSources.get(requestId) || null;
 }
 

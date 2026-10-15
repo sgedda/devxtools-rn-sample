@@ -50,10 +50,7 @@ export const handlers = [
     }
 
     if (title.length > 200) {
-      return HttpResponse.json(
-        { error: 'Title must be 200 characters or less' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: 'Title must be 200 characters or less' }, { status: 400 });
     }
 
     const newTask: Task = {

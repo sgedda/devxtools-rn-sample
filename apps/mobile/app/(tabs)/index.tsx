@@ -257,7 +257,11 @@ export default function TasksScreen() {
           Tap the + button above to add your first task
         </Text>
         {dataSource === 'msw' && scenario && (
-          <Text style={[styles.simulatedCaption, { color: colors.muted }]} maxFontSizeMultiplier={1.1} testID="simulated-caption">
+          <Text
+            style={[styles.simulatedCaption, { color: colors.muted }]}
+            maxFontSizeMultiplier={1.1}
+            testID="simulated-caption"
+          >
             Simulated by MSW · {scenarioLabels[scenario]}
           </Text>
         )}
@@ -268,7 +272,7 @@ export default function TasksScreen() {
   const renderError = () => {
     let errorMessage =
       error instanceof ApiError ? error.message : "Couldn't load tasks. Please try again.";
-    
+
     // Special handling for offline scenario
     if (scenario === 'offline' && error instanceof ApiError && !error.status) {
       errorMessage = 'No network connection (simulated by MSW with HttpResponse.error())';
@@ -288,7 +292,11 @@ export default function TasksScreen() {
           </Text>
         )}
         {dataSource === 'msw' && scenario && (
-          <Text style={[styles.simulatedCaption, { color: colors.muted }]} maxFontSizeMultiplier={1.1} testID="simulated-caption">
+          <Text
+            style={[styles.simulatedCaption, { color: colors.muted }]}
+            maxFontSizeMultiplier={1.1}
+            testID="simulated-caption"
+          >
             Simulated by MSW · {scenarioLabels[scenario]}
           </Text>
         )}

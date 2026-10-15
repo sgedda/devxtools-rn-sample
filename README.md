@@ -43,30 +43,30 @@ devxtools-rn-sample/
 
 ### Verified Versions (as of October 15, 2026)
 
-| Package                        | Version     | Purpose                                      |
-| ------------------------------ | ----------- | -------------------------------------------- |
+| Package                        | Version     | Purpose                                    |
+| ------------------------------ | ----------- | ------------------------------------------ |
 | **Runtime**                    |
-| Node.js                        | 24.22.0 LTS | Latest stable LTS ('Krypton', Oct 2025)      |
-| npm                            | 10.9.9+     | Package manager                              |
+| Node.js                        | 24.22.0 LTS | Latest stable LTS ('Krypton', Oct 2025)    |
+| npm                            | 10.9.9+     | Package manager                            |
 | **Mobile App (`apps/mobile`)** |
-| Expo SDK                       | 57.0.30     | React Native platform                        |
-| React                          | 19.3.1      | UI framework                                 |
-| React Native                   | 0.86.3      | Mobile framework (pinned by Expo SDK 57)     |
-| Expo Router                    | 57.0.28     | File-based routing                           |
-| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
-| Jest                           | 30.5.2      | Test runner                                  |
-| @testing-library/react-native  | 14.1.0      | Component testing                            |
+| Expo SDK                       | 57.0.30     | React Native platform                      |
+| React                          | 19.3.1      | UI framework                               |
+| React Native                   | 0.86.3      | Mobile framework (pinned by Expo SDK 57)   |
+| Expo Router                    | 57.0.28     | File-based routing                         |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint) |
+| Jest                           | 30.5.2      | Test runner                                |
+| @testing-library/react-native  | 14.1.0      | Component testing                          |
 | **Backend API (`apps/api`)**   |
-| Hono                           | 4.13.13     | Modern web framework                         |
-| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
-| Vitest                         | 5.0.5       | Fast test runner                             |
-| tsx                            | 4.19.2      | TypeScript execution                         |
-| @types/node                    | 24.19.2     | Node.js type definitions (for Node 24 LTS)   |
+| Hono                           | 4.13.13     | Modern web framework                       |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint) |
+| Vitest                         | 5.0.5       | Fast test runner                           |
+| tsx                            | 4.19.2      | TypeScript execution                       |
+| @types/node                    | 24.19.2     | Node.js type definitions (for Node 24 LTS) |
 | **Shared (`packages/shared`)** |
-| TypeScript                     | 6.0.3       | Shared type definitions                      |
+| TypeScript                     | 6.0.3       | Shared type definitions                    |
 | **Development**                |
-| ESLint                         | 10.12.0     | Linting                                      |
-| Prettier                       | 3.9.10      | Code formatting                              |
+| ESLint                         | 10.12.0     | Linting                                    |
+| Prettier                       | 3.9.10      | Code formatting                            |
 
 ### Important Version Notes
 

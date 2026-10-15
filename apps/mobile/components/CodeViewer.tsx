@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Linking } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import type { ScenarioName } from '@/src/mocks/scenarios';
@@ -26,7 +18,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
   if (!scenario) return null;
 
   const snippet = SCENARIO_SNIPPETS[scenario];
-  
+
   if (!snippet) {
     return null;
   }
@@ -36,7 +28,8 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={onClose}>
+      onRequestClose={onClose}
+    >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <Text style={[styles.title, { color: colors.text }]}>Handler: {scenario}</Text>
@@ -44,7 +37,8 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel="Close"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Text style={[styles.closeButton, { color: colors.tint }]}>Done</Text>
           </TouchableOpacity>
         </View>
@@ -67,7 +61,8 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
                   `https://github.com/sgedda/devxtools-rn-sample/blob/cursor/implement-ux-review-e0f5/apps/mobile/src/mocks/scenarios.ts#L${snippet.line}`
                 )
               }
-              accessibilityRole="link">
+              accessibilityRole="link"
+            >
               <Text style={[styles.path, { color: colors.tint }]}>
                 apps/mobile/src/mocks/scenarios.ts:{snippet.line}
               </Text>
@@ -99,15 +94,15 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
             <TouchableOpacity
               style={[styles.link, { backgroundColor: colors.surface }]}
               onPress={() => Linking.openURL('https://mswjs.io/docs/')}
-              accessibilityRole="link">
-              <Text style={[styles.linkText, { color: colors.tint }]}>
-                MSW Documentation →
-              </Text>
+              accessibilityRole="link"
+            >
+              <Text style={[styles.linkText, { color: colors.tint }]}>MSW Documentation →</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.link, { backgroundColor: colors.surface }]}
               onPress={() => Linking.openURL('https://devxtools.dev/tools/msw/')}
-              accessibilityRole="link">
+              accessibilityRole="link"
+            >
               <Text style={[styles.linkText, { color: colors.tint }]}>
                 devxtools.dev/tools/msw →
               </Text>

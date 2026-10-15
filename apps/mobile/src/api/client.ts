@@ -144,9 +144,7 @@ export class ApiClient {
       return data.tasks;
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(
-        `Couldn't load tasks. Please check your network connection.`
-      );
+      throw new ApiError(`Couldn't load tasks. Please check your network connection.`);
     }
   }
 
