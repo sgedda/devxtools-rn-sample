@@ -24,6 +24,9 @@ export async function startMocking() {
   // Wire up lifecycle events for request source tracking
   server.events.on('request:start', ({ requestId }: { request: Request; requestId: string }) => {
     // Track request start with current scenario
+    console.log(
+      `[MSW] request:start requestId=${requestId.slice(0, 30)}..., scenario=${getCurrentScenario()}`
+    );
     requestMap.set(requestId, {
       scenario: getCurrentScenario(),
       startTime: Date.now(),
@@ -32,6 +35,7 @@ export async function startMocking() {
 
   server.events.on('response:mocked', ({ requestId }: { requestId: string }) => {
     const tracked = requestMap.get(requestId);
+    console.log(`[MSW] response:mocked requestId=${requestId.slice(0, 30)}..., tracked=`, tracked);
     if (tracked && requestSourceCallback) {
       requestSourceCallback(requestId, 'msw', tracked.scenario || undefined);
     }
@@ -40,6 +44,10 @@ export async function startMocking() {
 
   server.events.on('request:unhandled', ({ requestId }: { requestId: string }) => {
     const tracked = requestMap.get(requestId);
+    console.log(
+      `[MSW] request:unhandled requestId=${requestId.slice(0, 30)}..., tracked=`,
+      tracked
+    );
     if (tracked && requestSourceCallback) {
       requestSourceCallback(requestId, 'real', undefined);
     }
@@ -48,6 +56,7 @@ export async function startMocking() {
 
   server.events.on('response:bypass', ({ requestId }: { requestId: string }) => {
     const tracked = requestMap.get(requestId);
+    console.log(`[MSW] response:bypass requestId=${requestId.slice(0, 30)}..., tracked=`, tracked);
     if (tracked && requestSourceCallback) {
       requestSourceCallback(requestId, 'real', undefined);
     }

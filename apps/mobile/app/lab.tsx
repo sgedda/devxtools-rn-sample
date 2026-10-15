@@ -164,47 +164,64 @@ export default function LabModal() {
             </View>
           ) : (
             <View style={styles.logContainer}>
-              {requestLog.slice(0, 10).map(entry => (
-                <View key={entry.id} style={[styles.logEntry, { backgroundColor: colors.surface }]}>
-                  <View style={styles.logHeader}>
-                    <Text style={[styles.logMethod, { color: colors.text }]}>{entry.method}</Text>
-                    <Text style={[styles.logUrl, { color: colors.text }]}>{entry.url}</Text>
-                    <View
-                      style={[
-                        styles.logSourceBadge,
-                        {
-                          backgroundColor:
-                            entry.source === 'real'
-                              ? colors.success
-                              : entry.source === 'msw'
-                                ? colors.tint
-                                : '#f59e0b',
-                        },
-                      ]}
-                    >
-                      <Text style={styles.logSourceText}>
-                        {entry.source === 'real'
-                          ? 'Real'
-                          : entry.source === 'msw'
-                            ? 'MSW'
-                            : 'Mockifyer'}
+              {requestLog.slice(0, 10).map(entry =>
+                entry.divider ? (
+                  <View
+                    key={entry.id}
+                    style={[
+                      styles.divider,
+                      { backgroundColor: 'rgba(128, 128, 128, 0.1)', borderColor: colors.border },
+                    ]}
+                  >
+                    <Text style={[styles.dividerText, { color: colors.text }]}>
+                      {entry.dividerText}
+                    </Text>
+                  </View>
+                ) : (
+                  <View
+                    key={entry.id}
+                    style={[styles.logEntry, { backgroundColor: colors.surface }]}
+                  >
+                    <View style={styles.logHeader}>
+                      <Text style={[styles.logMethod, { color: colors.text }]}>{entry.method}</Text>
+                      <Text style={[styles.logUrl, { color: colors.text }]}>{entry.url}</Text>
+                      <View
+                        style={[
+                          styles.logSourceBadge,
+                          {
+                            backgroundColor:
+                              entry.source === 'real'
+                                ? colors.success
+                                : entry.source === 'msw'
+                                  ? colors.tint
+                                  : '#f59e0b',
+                          },
+                        ]}
+                      >
+                        <Text style={styles.logSourceText}>
+                          {entry.source === 'real'
+                            ? 'Real'
+                            : entry.source === 'msw'
+                              ? 'MSW'
+                              : 'Mockifyer'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.logDetails}>
+                      <Text style={[styles.logDetailText, { color: colors.muted }]}>
+                        {entry.status
+                          ? `${entry.status} · ${entry.duration}ms`
+                          : `${entry.duration}ms`}
                       </Text>
+                      {entry.scenario && (
+                        <Text style={[styles.logDetailText, { color: colors.muted }]}>
+                          Scenario: {scenarioLabels[entry.scenario as ScenarioName]}
+                        </Text>
+                      )}
                     </View>
                   </View>
-                  <View style={styles.logDetails}>
-                    <Text style={[styles.logDetailText, { color: colors.muted }]}>
-                      {entry.status
-                        ? `${entry.status} · ${entry.duration}ms`
-                        : `${entry.duration}ms`}
-                    </Text>
-                    {entry.scenario && (
-                      <Text style={[styles.logDetailText, { color: colors.muted }]}>
-                        Scenario: {scenarioLabels[entry.scenario as ScenarioName]}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              ))}
+                )
+              )}
             </View>
           )}
 
@@ -412,5 +429,17 @@ const styles = StyleSheet.create({
   clearButtonText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  divider: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  dividerText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
