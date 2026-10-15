@@ -9,7 +9,7 @@ import {
   setRequestSourceCallback,
   resetMockTasks,
 } from '../mocks/native';
-import { scenarios, type ScenarioName } from '../mocks/scenarios';
+import { scenarios, type ScenarioName, resetScenarioState } from '../mocks/scenarios';
 import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
@@ -137,6 +137,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
         if (savedScenario && savedSource === 'msw') {
           setScenarioState(savedScenario as ScenarioName);
+          scenarioRef.current = savedScenario as ScenarioName;
           // Apply the scenario BEFORE rendering
           applyScenario(scenarios[savedScenario as ScenarioName]);
         }
@@ -185,6 +186,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
     requestSourcesRef.current.clear();
 
     setScenarioState(newScenario);
+    scenarioRef.current = newScenario;
 
     if (newScenario) {
       await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
@@ -196,6 +198,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
       if (newScenario) {
         resetHandlers();
         resetMockTasks();
+        resetScenarioState();
         applyScenario(scenarios[newScenario]);
       } else {
         resetHandlers();
@@ -223,9 +226,11 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     // Now apply the scenario
     setScenarioState(newScenario);
+    scenarioRef.current = newScenario;
     await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
     resetHandlers();
     resetMockTasks();
+    resetScenarioState();
     applyScenario(scenarios[newScenario]);
 
     // Reset queries after log is cleared

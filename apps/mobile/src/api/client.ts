@@ -127,6 +127,8 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
         method,
         url,
         duration,
+        source: requestSource,
+        scenario: requestScenario || undefined,
       });
     }
 
