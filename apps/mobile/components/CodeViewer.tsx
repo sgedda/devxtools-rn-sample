@@ -52,7 +52,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
         <ScrollView style={styles.content}>
           <View style={[styles.codeBlock, { backgroundColor: colors.surface }]}>
             <Text style={[styles.code, { color: colors.text }]}>
-              {typeof snippet.code === 'string' ? snippet.code : JSON.stringify(snippet.code)}
+              {String(snippet?.code || 'Code unavailable')}
             </Text>
           </View>
 
