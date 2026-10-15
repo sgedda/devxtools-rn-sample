@@ -145,7 +145,7 @@ export class ApiClient {
     } catch (error) {
       if (error instanceof ApiError) throw error;
       throw new ApiError(
-        `Couldn't load tasks. Check that the API is running at ${this.baseUrl}.`
+        `Couldn't load tasks. Please check your network connection.`
       );
     }
   }

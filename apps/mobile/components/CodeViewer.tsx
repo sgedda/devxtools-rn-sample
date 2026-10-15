@@ -19,44 +19,6 @@ interface CodeViewerProps {
   scenario?: ScenarioName;
 }
 
-<<<<<<< HEAD
-=======
-// Import scenario handlers to extract code
-import { scenarios } from '@/src/mocks/scenarios';
-import type { RequestHandler } from 'msw';
-
-// Type for accessing MSW handler internals
-type HandlerWithResolver = RequestHandler & { resolver?: unknown };
-
-// Extract handler code by converting to string
-function getHandlerCode(scenario: ScenarioName): string {
-  const handlers = scenarios[scenario];
-  if (!handlers || handlers.length === 0) return '';
-  
-  // Get the handler and access its resolver function
-  const handler = handlers[0] as HandlerWithResolver;
-  const resolver = handler.resolver || handler;
-  const handlerStr = resolver.toString();
-  
-  // Try to extract just the response logic
-  const match = handlerStr.match(/\{([\s\S]*)\}/);
-  if (match) {
-    return match[1].trim();
-  }
-  
-  return handlerStr;
-}
-
-const SCENARIO_INFO: Record<ScenarioName, { description: string; lineStart: number }> = {
-  empty: { description: 'Returns an empty tasks array', lineStart: 5 },
-  slow: { description: 'Delays response by 3 seconds', lineStart: 12 },
-  error500: { description: 'Returns HTTP 500 server error', lineStart: 29 },
-  validation400: { description: 'Returns HTTP 400 validation error on POST', lineStart: 39 },
-  offline: { description: 'Simulates network error', lineStart: 49 },
-  flaky: { description: 'Fails every 3rd request (HTTP 503)', lineStart: 57 },
-};
-
->>>>>>> 8980df9d7b4bcf9a7c16b26e8076f52ed5569f56
 export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
