@@ -45,12 +45,18 @@ export default function TasksScreen() {
     return () => unsubscribe();
   }, []);
 
+  // Invalidate tasks query when data source or scenario changes
+  React.useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  }, [dataSource, scenario, queryClient]);
+
   const {
     data: tasks = [],
     isLoading,
     isError,
     error,
     refetch,
+    isRefetching,
   } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
@@ -120,13 +126,22 @@ export default function TasksScreen() {
     mutationFn: (id: string) => apiClient.deleteTask(id),
     onMutate: async id => {
       setPendingDeletes(prev => new Set(prev).add(id));
+      return { id };
     },
-    onError: (err, id) => {
+    onError: (err, id, context) => {
       setPendingDeletes(prev => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
+      if (context?.id && undoAction?.task.id === context.id) {
+        queryClient.setQueryData<Task[]>(['tasks'], old => {
+          if (!old) return [undoAction.task];
+          return [...old, undoAction.task].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        });
+      }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Error', "Couldn't delete task. Please try again.");
     },
@@ -147,6 +162,7 @@ export default function TasksScreen() {
   const handleDelete = (task: Task) => {
     if (undoAction) {
       clearTimeout(undoAction.timeoutId);
+      deleteMutation.mutate(undoAction.task.id);
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -192,7 +208,8 @@ export default function TasksScreen() {
           <Text
             style={styles.deleteActionText}
             accessibilityRole="button"
-            accessibilityLabel={`Delete ${task.title}`}>
+            accessibilityLabel={`Delete ${task.title}`}
+          >
             Delete
           </Text>
         </Animated.View>
@@ -208,20 +225,23 @@ export default function TasksScreen() {
         renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
         onSwipeableOpen={() => handleDelete(task)}
         overshootRight={false}
-        enabled={!isDeleting}>
+        enabled={!isDeleting}
+      >
         <View
           style={[
             styles.taskItem,
             { backgroundColor: colors.card, borderBottomColor: colors.border },
             isDeleting && styles.taskDeleting,
-          ]}>
+          ]}
+        >
           <TouchableOpacity
             style={styles.checkbox}
             onPress={() => handleToggle(task)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: task.completed }}
             accessibilityLabel={task.title}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <View
               style={[
                 styles.checkboxCircle,
@@ -229,7 +249,8 @@ export default function TasksScreen() {
                   borderColor: task.completed ? colors.tint : colors.border,
                   backgroundColor: task.completed ? colors.tint : 'transparent',
                 },
-              ]}>
+              ]}
+            >
               {task.completed && <Text style={styles.checkmark}>✓</Text>}
             </View>
           </TouchableOpacity>
@@ -242,12 +263,11 @@ export default function TasksScreen() {
                 task.completed && styles.taskTitleCompleted,
               ]}
               numberOfLines={2}
-              maxFontSizeMultiplier={1.3}>
+              maxFontSizeMultiplier={1.3}
+            >
               {task.title}
             </Text>
-            <Text
-              style={[styles.taskDate, { color: colors.muted }]}
-              maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.taskDate, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
               {getRelativeTime(task.createdAt)}
             </Text>
           </View>
@@ -284,15 +304,11 @@ export default function TasksScreen() {
           {errorMessage}
         </Text>
         {!isOnline && (
-          <Text
-            style={[styles.errorText, { color: colors.muted }]}
-            maxFontSizeMultiplier={1.2}>
+          <Text style={[styles.errorText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
             You appear to be offline. Check your connection.
           </Text>
         )}
-        <Text
-          style={[styles.errorSubtext, { color: colors.muted }]}
-          maxFontSizeMultiplier={1.1}>
+        <Text style={[styles.errorSubtext, { color: colors.muted }]} maxFontSizeMultiplier={1.1}>
           API: {API_BASE_URL}
         </Text>
         <TouchableOpacity
@@ -301,7 +317,8 @@ export default function TasksScreen() {
           accessibilityRole="button"
           accessibilityLabel="Retry loading tasks"
           testID="retry-button"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={styles.retryButtonText} maxFontSizeMultiplier={1.2}>
             Retry
           </Text>
@@ -311,12 +328,17 @@ export default function TasksScreen() {
   };
 
   const renderSkeleton = () => (
-    <View style={styles.skeletonContainer} accessibilityLabel="Loading tasks" testID="tasks-loading">
+    <View
+      style={styles.skeletonContainer}
+      accessibilityLabel="Loading tasks"
+      testID="tasks-loading"
+    >
       {[...Array(5)].map((_, i) => (
         <View
           key={i}
           style={[styles.skeletonItem, { backgroundColor: colors.surface }]}
-          accessible={false}>
+          accessible={false}
+        >
           <View style={[styles.skeletonCircle, { backgroundColor: colors.border }]} />
           <View style={styles.skeletonContent}>
             <View
@@ -340,17 +362,28 @@ export default function TasksScreen() {
   );
 
   if (isLoading) {
-    return <View style={[styles.container, { backgroundColor: colors.background }]}>{renderSkeleton()}</View>;
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {renderSkeleton()}
+      </View>
+    );
   }
 
   if (isError) {
-    return <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-error">{renderError()}</View>;
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-error">
+        {renderError()}
+      </View>
+    );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-screen">;
+    <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-screen">
       {!isOnline && (
-        <View style={[styles.offlineBanner, { backgroundColor: colors.surface }]} testID="offline-banner">
+        <View
+          style={[styles.offlineBanner, { backgroundColor: colors.surface }]}
+          testID="offline-banner"
+        >
           <Text style={[styles.offlineText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
             You're offline
           </Text>
@@ -371,7 +404,7 @@ export default function TasksScreen() {
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
-            refreshing={false}
+            refreshing={isRefetching}
             onRefresh={refetch}
             tintColor={colors.tint}
             colors={[colors.tint]}
@@ -385,7 +418,8 @@ export default function TasksScreen() {
             styles.snackbar,
             { backgroundColor: colors.surface, bottom: Math.max(insets.bottom, spacing.md) },
           ]}
-          testID="undo-snackbar">
+          testID="undo-snackbar"
+        >
           <Text style={[styles.snackbarText, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
             Task deleted
           </Text>
@@ -394,7 +428,8 @@ export default function TasksScreen() {
             accessibilityRole="button"
             accessibilityLabel="Undo delete"
             testID="undo-button"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Text style={[styles.snackbarAction, { color: colors.tint }]}>Undo</Text>
           </TouchableOpacity>
         </View>

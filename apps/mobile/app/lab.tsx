@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
@@ -25,8 +19,8 @@ export default function LabModal() {
   // Handle deep link scenario parameter
   useEffect(() => {
     if (params.scenario && params.scenario in scenarios) {
-      setDataSource('msw');
-      setScenario(params.scenario as ScenarioName);
+      setScenario(params.scenario as ScenarioName, 'msw');
+      setDataSource('msw', params.scenario as ScenarioName);
     }
   }, [params.scenario]);
 
@@ -60,7 +54,8 @@ export default function LabModal() {
               onPress={() => router.back()}
               accessibilityRole="button"
               accessibilityLabel="Close"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Text style={[styles.headerButton, { color: colors.tint }]}>Close</Text>
             </TouchableOpacity>
           ),
@@ -68,7 +63,8 @@ export default function LabModal() {
       />
       <ScrollView
         style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={styles.content}>
+        contentContainerStyle={styles.content}
+      >
         {/* Data Source Selection */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Data Source</Text>
@@ -91,7 +87,8 @@ export default function LabModal() {
                 onPress={() => handleDataSourceChange(source)}
                 disabled={source === 'mockifyer'}
                 accessibilityRole="button"
-                accessibilityState={{ selected: dataSource === source }}>
+                accessibilityState={{ selected: dataSource === source }}
+              >
                 <Text
                   style={[
                     styles.segmentText,
@@ -103,7 +100,8 @@ export default function LabModal() {
                             ? colors.muted
                             : colors.text,
                     },
-                  ]}>
+                  ]}
+                >
                   {source === 'real' ? 'Real' : source === 'msw' ? 'MSW' : 'Mockifyer*'}
                 </Text>
               </TouchableOpacity>
@@ -120,8 +118,8 @@ export default function LabModal() {
           {dataSource === 'real' && (
             <View style={[styles.warningBox, { backgroundColor: colors.surface }]}>
               <Text style={[styles.warningText, { color: colors.muted }]}>
-                Try reproducing a 500 error with the real API… you can't easily. That's why
-                mocking exists.
+                Try reproducing a 500 error with the real API… you can't easily. That's why mocking
+                exists.
               </Text>
             </View>
           )}
@@ -133,8 +131,7 @@ export default function LabModal() {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor:
-                        scenario === scenarioKey ? colors.tint : colors.surface,
+                      backgroundColor: scenario === scenarioKey ? colors.tint : colors.surface,
                       borderColor: scenario === scenarioKey ? colors.tint : colors.border,
                     },
                     dataSource === 'real' && styles.chipDisabled,
@@ -142,7 +139,8 @@ export default function LabModal() {
                   onPress={() => handleScenarioChange(scenarioKey)}
                   disabled={dataSource === 'real'}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: scenario === scenarioKey }}>
+                  accessibilityState={{ selected: scenario === scenarioKey }}
+                >
                   <Text
                     style={[
                       styles.chipText,
@@ -154,7 +152,8 @@ export default function LabModal() {
                               ? colors.muted
                               : colors.text,
                       },
-                    ]}>
+                    ]}
+                  >
                     {scenarioLabels[scenarioKey]}
                   </Text>
                 </TouchableOpacity>
@@ -163,10 +162,9 @@ export default function LabModal() {
                     onPress={() => handleShowCode(scenarioKey)}
                     style={styles.showCodeButton}
                     accessibilityRole="button"
-                    accessibilityLabel={`Show code for ${scenarioLabels[scenarioKey]}`}>
-                    <Text style={[styles.showCodeText, { color: colors.tint }]}>
-                      Show code
-                    </Text>
+                    accessibilityLabel={`Show code for ${scenarioLabels[scenarioKey]}`}
+                  >
+                    <Text style={[styles.showCodeText, { color: colors.tint }]}>Show code</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -190,13 +188,9 @@ export default function LabModal() {
           ) : (
             <View style={styles.logContainer}>
               {requestLog.slice(0, 10).map(entry => (
-                <View
-                  key={entry.id}
-                  style={[styles.logEntry, { backgroundColor: colors.surface }]}>
+                <View key={entry.id} style={[styles.logEntry, { backgroundColor: colors.surface }]}>
                   <View style={styles.logHeader}>
-                    <Text style={[styles.logMethod, { color: colors.text }]}>
-                      {entry.method}
-                    </Text>
+                    <Text style={[styles.logMethod, { color: colors.text }]}>{entry.method}</Text>
                     <Text style={[styles.logUrl, { color: colors.text }]}>{entry.url}</Text>
                     <View
                       style={[
@@ -209,7 +203,8 @@ export default function LabModal() {
                                 ? colors.tint
                                 : '#f59e0b',
                         },
-                      ]}>
+                      ]}
+                    >
                       <Text style={styles.logSourceText}>
                         {entry.source === 'real'
                           ? 'Real'
@@ -242,17 +237,17 @@ export default function LabModal() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Learn More</Text>
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor: colors.surface }]}
-            accessibilityRole="link">
-            <Text style={[styles.linkText, { color: colors.tint }]}>
-              MSW Documentation →
-            </Text>
+            onPress={() => Linking.openURL('https://mswjs.io/docs/')}
+            accessibilityRole="link"
+          >
+            <Text style={[styles.linkText, { color: colors.tint }]}>MSW Documentation →</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor: colors.surface }]}
-            accessibilityRole="link">
-            <Text style={[styles.linkText, { color: colors.tint }]}>
-              devxtools.dev/tools/msw →
-            </Text>
+            onPress={() => Linking.openURL('https://devxtools.dev/tools/msw/')}
+            accessibilityRole="link"
+          >
+            <Text style={[styles.linkText, { color: colors.tint }]}>devxtools.dev/tools/msw →</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

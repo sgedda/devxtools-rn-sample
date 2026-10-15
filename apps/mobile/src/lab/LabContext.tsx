@@ -57,6 +57,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
           setDataSourceState(savedSource as DataSource);
           if (savedSource === 'msw') {
             startMocking();
+            if (savedScenario) {
+              applyScenario(scenarios[savedScenario as ScenarioName]);
+            }
           }
         }
 
@@ -75,14 +78,16 @@ export function LabProvider({ children }: { children: ReactNode }) {
     loadState();
   }, []);
 
-  const setDataSource = async (source: DataSource) => {
+  const setDataSource = async (source: DataSource, withScenario?: ScenarioName | null) => {
     setDataSourceState(source);
     await AsyncStorage.setItem(STORAGE_KEYS.DATA_SOURCE, source);
 
+    const effectiveScenario = withScenario !== undefined ? withScenario : scenario;
+
     if (source === 'msw') {
       startMocking();
-      if (scenario) {
-        applyScenario(scenarios[scenario]);
+      if (effectiveScenario) {
+        applyScenario(scenarios[effectiveScenario]);
       }
     } else {
       stopMocking();
@@ -92,7 +97,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
     setRequestLog([]);
   };
 
-  const setScenario = async (newScenario: ScenarioName | null) => {
+  const setScenario = async (newScenario: ScenarioName | null, withDataSource?: DataSource) => {
     setScenarioState(newScenario);
 
     if (newScenario) {
@@ -101,7 +106,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
       await AsyncStorage.removeItem(STORAGE_KEYS.SCENARIO);
     }
 
-    if (dataSource === 'msw') {
+    const effectiveDataSource = withDataSource !== undefined ? withDataSource : dataSource;
+
+    if (effectiveDataSource === 'msw') {
       if (newScenario) {
         resetHandlers();
         resetMockTasks();
@@ -141,7 +148,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
         clearLog,
         hasCompletedWalkthrough,
         completeWalkthrough,
-      }}>
+      }}
+    >
       {children}
     </LabContext.Provider>
   );
