@@ -30,11 +30,7 @@ export default function LabModal() {
     }
   }, [params.scenario]);
 
-  const handleDataSourceChange = (source: DataSource) => {
-    if (source === 'mockifyer') {
-      // Mockifyer is stubbed for now
-      return;
-    }
+  const handleDataSourceChange = (source: 'real' | 'msw') => {
     setDataSource(source);
   };
 

@@ -18,17 +18,34 @@ interface CodeViewerProps {
   scenario?: ScenarioName;
 }
 
-// Reference the actual source file
-const GITHUB_BASE = 'https://github.com/sgedda/devxtools-rn-sample/blob/main';
-const SCENARIO_FILE = 'apps/mobile/src/mocks/scenarios.ts';
+// Import scenario handlers to extract code
+import { scenarios } from '@/src/mocks/scenarios';
 
-const SCENARIO_DESCRIPTIONS: Record<ScenarioName, { description: string; line: number }> = {
-  empty: { description: 'Returns an empty tasks array', line: 12 },
-  slow: { description: 'Delays response by 3 seconds', line: 18 },
-  error500: { description: 'Returns HTTP 500 server error', line: 29 },
-  validation400: { description: 'Returns HTTP 400 validation error on POST', line: 36 },
-  offline: { description: 'Simulates network error', line: 42 },
-  flaky: { description: 'Fails every 3rd request (HTTP 503)', line: 49 },
+// Extract handler code by converting to string
+function getHandlerCode(scenario: ScenarioName): string {
+  const handlers = scenarios[scenario];
+  if (!handlers || handlers.length === 0) return '';
+  
+  // Get the handler function and extract its body
+  const handler = handlers[0];
+  const handlerStr = handler.toString();
+  
+  // Try to extract just the response logic
+  const match = handlerStr.match(/\{([\s\S]*)\}/);
+  if (match) {
+    return match[1].trim();
+  }
+  
+  return handlerStr;
+}
+
+const SCENARIO_INFO: Record<ScenarioName, { description: string; lineStart: number }> = {
+  empty: { description: 'Returns an empty tasks array', lineStart: 5 },
+  slow: { description: 'Delays response by 3 seconds', lineStart: 12 },
+  error500: { description: 'Returns HTTP 500 server error', lineStart: 29 },
+  validation400: { description: 'Returns HTTP 400 validation error on POST', lineStart: 39 },
+  offline: { description: 'Simulates network error', lineStart: 49 },
+  flaky: { description: 'Fails every 3rd request (HTTP 503)', lineStart: 57 },
 };
 
 export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
@@ -37,7 +54,8 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
 
   if (!scenario) return null;
 
-  const info = SCENARIO_DESCRIPTIONS[scenario];
+  const info = SCENARIO_INFO[scenario];
+  const code = getHandlerCode(scenario);
 
   return (
     <Modal
@@ -62,16 +80,24 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
             <Text style={[styles.infoText, { color: colors.text }]}>{info.description}</Text>
           </View>
 
+          <View style={[styles.codeBlock, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.code, { color: colors.text }]}>{code}</Text>
+          </View>
+
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               This handler is defined in:
             </Text>
             <TouchableOpacity
               style={[styles.link, { backgroundColor: colors.surface }]}
-              onPress={() => Linking.openURL(`${GITHUB_BASE}/${SCENARIO_FILE}#L${info.line}`)}
+              onPress={() =>
+                Linking.openURL(
+                  `https://github.com/sgedda/devxtools-rn-sample/blob/cursor/implement-ux-review-e0f5/apps/mobile/src/mocks/scenarios.ts#L${info.lineStart}`
+                )
+              }
               accessibilityRole="link">
               <Text style={[styles.path, { color: colors.tint }]}>
-                {SCENARIO_FILE}:{info.line}
+                apps/mobile/src/mocks/scenarios.ts:{info.lineStart}
               </Text>
               <Text style={[styles.linkText, { color: colors.tint }]}>View on GitHub →</Text>
             </TouchableOpacity>
@@ -148,12 +174,22 @@ const styles = StyleSheet.create({
   infoBox: {
     padding: spacing.lg,
     borderRadius: 12,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
   },
   infoText: {
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '500',
+  },
+  codeBlock: {
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.xl,
+  },
+  code: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+    lineHeight: 20,
   },
   section: {
     marginBottom: spacing.xl,
