@@ -37,29 +37,35 @@ devxtools-rn-sample/
 
 ### Verified Versions (as of October 15, 2026)
 
-| Package                        | Version     | Purpose                           |
-| ------------------------------ | ----------- | --------------------------------- |
+| Package                        | Version     | Purpose                                      |
+| ------------------------------ | ----------- | -------------------------------------------- |
 | **Runtime**                    |
-| Node.js                        | 24.22.0 LTS | Latest stable LTS                 |
-| npm                            | 10.9.9+     | Package manager                   |
+| Node.js                        | 24.22.0 LTS | Latest stable LTS ('Krypton', Oct 2025)      |
+| npm                            | 10.9.9+     | Package manager                              |
 | **Mobile App (`apps/mobile`)** |
-| Expo SDK                       | 57.0.29     | React Native platform             |
-| React                          | 19.2.3      | UI framework                      |
-| React Native                   | 0.86.3      | Mobile framework (pinned by Expo) |
-| Expo Router                    | 57.0.27     | File-based routing                |
-| TypeScript                     | 7.0.2       | Type safety                       |
-| Jest                           | 30.5.2      | Test runner                       |
-| @testing-library/react-native  | 12.9.0      | Component testing                 |
+| Expo SDK                       | 57.0.30     | React Native platform                        |
+| React                          | 19.3.1      | UI framework                                 |
+| React Native                   | 0.86.3      | Mobile framework (pinned by Expo SDK 57)     |
+| Expo Router                    | 57.0.28     | File-based routing                           |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
+| Jest                           | 30.5.2      | Test runner                                  |
+| @testing-library/react-native  | 14.1.0      | Component testing                            |
 | **Backend API (`apps/api`)**   |
-| Hono                           | 4.13.13     | Modern web framework              |
-| TypeScript                     | 7.0.2       | Type safety                       |
-| Vitest                         | 5.0.5       | Fast test runner                  |
-| tsx                            | 4.19.2      | TypeScript execution              |
+| Hono                           | 4.13.13     | Modern web framework                         |
+| TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
+| Vitest                         | 5.0.5       | Fast test runner                             |
+| tsx                            | 4.19.2      | TypeScript execution                         |
 | **Shared (`packages/shared`)** |
-| TypeScript                     | 7.0.2       | Shared type definitions           |
+| TypeScript                     | 6.0.3       | Shared type definitions                      |
 | **Development**                |
-| ESLint                         | 10.12.0     | Linting                           |
-| Prettier                       | 3.9.10      | Code formatting                   |
+| ESLint                         | 10.12.0     | Linting                                      |
+| Prettier                       | 3.9.10      | Code formatting                              |
+
+### Important Version Notes
+
+- **React Native 0.86.3**: Pinned by Expo SDK 57. Latest npm version (0.88.0) is not compatible with Expo 57. Always use the version Expo pins (`npx expo install react-native --check`).
+- **TypeScript 6.0.3**: TypeScript 7.0.2 is available but not yet supported by @typescript-eslint/parser (requires <6.1.0). Will upgrade when typescript-eslint v9+ is released.
+- **Node.js 24.22.0**: Latest LTS version 'Krypton', released October 2025.
 
 ### Why Hono?
 
