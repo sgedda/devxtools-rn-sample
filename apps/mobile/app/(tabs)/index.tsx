@@ -192,12 +192,22 @@ export default function TasksScreen() {
     const isDeleting = pendingDeletes.has(task.id);
 
     return (
-      <Swipeable
-        renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
-        onSwipeableOpen={() => handleDelete(task)}
-        overshootRight={false}
-        enabled={!isDeleting}
+      <View
+        accessible={true}
+        accessibilityLabel={`Task: ${task.title}`}
+        accessibilityActions={[{ name: 'delete', label: 'Delete task' }]}
+        onAccessibilityAction={(event: any) => {
+          if (event.nativeEvent.actionName === 'delete') {
+            handleDelete(task);
+          }
+        }}
       >
+        <Swipeable
+          renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
+          onSwipeableOpen={() => handleDelete(task)}
+          overshootRight={false}
+          enabled={!isDeleting}
+        >
         <View
           style={[
             styles.taskItem,

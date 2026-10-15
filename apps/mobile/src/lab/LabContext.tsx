@@ -9,7 +9,7 @@ import {
   setRequestSourceCallback,
   resetMockTasks,
 } from '../mocks/native';
-import { scenarios, type ScenarioName } from '../mocks/scenarios';
+import { scenarios, scenarioLabels, type ScenarioName } from '../mocks/scenarios';
 import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
@@ -38,6 +38,8 @@ export interface RequestLogEntry {
   source: 'real' | 'msw' | 'mockifyer';
   scenario?: string;
   handler?: string;
+  divider?: boolean;
+  dividerText?: string;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
