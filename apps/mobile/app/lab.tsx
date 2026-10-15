@@ -18,7 +18,7 @@ export default function LabModal() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
-  const { dataSource, scenario, setDataSource, selectScenario, requestLog } = useLab();
+  const { dataSource, scenario, setDataSource, setScenario, selectScenario, requestLog } = useLab();
   const params = useLocalSearchParams<{ scenario?: string }>();
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();

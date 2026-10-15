@@ -20,7 +20,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLab } from '@/src/lab/LabContext';
-import { scenarioLabels } from '@/src/mocks/scenarios';
 
 type UndoAction = {
   type: 'delete';
@@ -33,7 +32,7 @@ export default function TasksScreen() {
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { addLogEntry, dataSource, scenario } = useLab();
+  const { dataSource, scenario } = useLab();
   const [isOnline, setIsOnline] = React.useState(true);
   const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
@@ -61,37 +60,7 @@ export default function TasksScreen() {
   } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const startTime = Date.now();
-      try {
-        const result = await apiClient.getTasks();
-        const duration = Date.now() - startTime;
-
-        addLogEntry({
-          id: `${Date.now()}`,
-          timestamp: Date.now(),
-          method: 'GET',
-          url: '/tasks',
-          status: 200,
-          duration,
-          source: dataSource === 'real' ? 'real' : dataSource === 'msw' ? 'msw' : 'mockifyer',
-          scenario: scenario || undefined,
-        });
-
-        return result;
-      } catch (err) {
-        const duration = Date.now() - startTime;
-        addLogEntry({
-          id: `${Date.now()}`,
-          timestamp: Date.now(),
-          method: 'GET',
-          url: '/tasks',
-          status: err instanceof ApiError ? err.status : undefined,
-          duration,
-          source: dataSource === 'real' ? 'real' : dataSource === 'msw' ? 'msw' : 'mockifyer',
-          scenario: scenario || undefined,
-        });
-        throw err;
-      }
+      return await apiClient.getTasks();
     },
     retry: 1,
   });

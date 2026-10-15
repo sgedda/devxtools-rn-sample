@@ -20,15 +20,20 @@ interface CodeViewerProps {
 
 // Import scenario handlers to extract code
 import { scenarios } from '@/src/mocks/scenarios';
+import type { RequestHandler } from 'msw';
+
+// Type for accessing MSW handler internals
+type HandlerWithResolver = RequestHandler & { resolver?: unknown };
 
 // Extract handler code by converting to string
 function getHandlerCode(scenario: ScenarioName): string {
   const handlers = scenarios[scenario];
   if (!handlers || handlers.length === 0) return '';
   
-  // Get the handler function and extract its body
-  const handler = handlers[0];
-  const handlerStr = handler.toString();
+  // Get the handler and access its resolver function
+  const handler = handlers[0] as HandlerWithResolver;
+  const resolver = handler.resolver || handler;
+  const handlerStr = resolver.toString();
   
   // Try to extract just the response logic
   const match = handlerStr.match(/\{([\s\S]*)\}/);
