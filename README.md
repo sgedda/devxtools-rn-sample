@@ -55,6 +55,7 @@ devxtools-rn-sample/
 | TypeScript                     | 6.0.3       | Type safety (limited by typescript-eslint)   |
 | Vitest                         | 5.0.5       | Fast test runner                             |
 | tsx                            | 4.19.2      | TypeScript execution                         |
+| @types/node                    | 24.19.2     | Node.js type definitions (for Node 24 LTS)   |
 | **Shared (`packages/shared`)** |
 | TypeScript                     | 6.0.3       | Shared type definitions                      |
 | **Development**                |
