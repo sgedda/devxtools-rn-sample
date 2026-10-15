@@ -113,9 +113,6 @@ export function LabProvider({ children }: { children: ReactNode }) {
     // Callback from native.ts for MSW worker lifecycle events
     setRequestSourceCallback((requestId: string, source: 'msw' | 'real', handler?: string) => {
       // Stamp the source at MSW event time
-      console.log(
-        `[LAB] MSW event: requestId=${requestId.slice(0, 30)}..., source=${source}, handler=${handler}`
-      );
       requestSourcesRef.current.set(requestId, { source, handler });
     });
 
