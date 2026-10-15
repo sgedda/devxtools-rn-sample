@@ -1,7 +1,6 @@
-import Constants from 'expo-constants';
 import type { Task, TasksResponse, TaskResponse, CreateTaskRequest } from '@devxtools/shared';
 
-const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export class ApiClient {
   private baseUrl: string;
