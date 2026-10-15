@@ -11,6 +11,7 @@ import {
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
 import type { ScenarioName } from '@/src/mocks/scenarios';
+import { SCENARIO_SNIPPETS } from '@/src/mocks/scenarios.snippets';
 
 interface CodeViewerProps {
   visible: boolean;
@@ -18,44 +19,13 @@ interface CodeViewerProps {
   scenario?: ScenarioName;
 }
 
-// Import scenario handlers to extract code
-import { scenarios } from '@/src/mocks/scenarios';
-
-// Extract handler code by converting to string
-function getHandlerCode(scenario: ScenarioName): string {
-  const handlers = scenarios[scenario];
-  if (!handlers || handlers.length === 0) return '';
-  
-  // Get the handler function and extract its body
-  const handler = handlers[0];
-  const handlerStr = handler.toString();
-  
-  // Try to extract just the response logic
-  const match = handlerStr.match(/\{([\s\S]*)\}/);
-  if (match) {
-    return match[1].trim();
-  }
-  
-  return handlerStr;
-}
-
-const SCENARIO_INFO: Record<ScenarioName, { description: string; lineStart: number }> = {
-  empty: { description: 'Returns an empty tasks array', lineStart: 5 },
-  slow: { description: 'Delays response by 3 seconds', lineStart: 12 },
-  error500: { description: 'Returns HTTP 500 server error', lineStart: 29 },
-  validation400: { description: 'Returns HTTP 400 validation error on POST', lineStart: 39 },
-  offline: { description: 'Simulates network error', lineStart: 49 },
-  flaky: { description: 'Fails every 3rd request (HTTP 503)', lineStart: 57 },
-};
-
 export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
 
   if (!scenario) return null;
 
-  const info = SCENARIO_INFO[scenario];
-  const code = getHandlerCode(scenario);
+  const snippet = SCENARIO_SNIPPETS[scenario];
 
   return (
     <Modal
@@ -76,12 +46,8 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
         </View>
 
         <ScrollView style={styles.content}>
-          <View style={[styles.infoBox, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.infoText, { color: colors.text }]}>{info.description}</Text>
-          </View>
-
           <View style={[styles.codeBlock, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.code, { color: colors.text }]}>{code}</Text>
+            <Text style={[styles.code, { color: colors.text }]}>{snippet.code}</Text>
           </View>
 
           <View style={styles.section}>
@@ -92,12 +58,12 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
               style={[styles.link, { backgroundColor: colors.surface }]}
               onPress={() =>
                 Linking.openURL(
-                  `https://github.com/sgedda/devxtools-rn-sample/blob/cursor/implement-ux-review-e0f5/apps/mobile/src/mocks/scenarios.ts#L${info.lineStart}`
+                  `https://github.com/sgedda/devxtools-rn-sample/blob/cursor/implement-ux-review-e0f5/apps/mobile/src/mocks/scenarios.ts#L${snippet.line}`
                 )
               }
               accessibilityRole="link">
               <Text style={[styles.path, { color: colors.tint }]}>
-                apps/mobile/src/mocks/scenarios.ts:{info.lineStart}
+                apps/mobile/src/mocks/scenarios.ts:{snippet.line}
               </Text>
               <Text style={[styles.linkText, { color: colors.tint }]}>View on GitHub →</Text>
             </TouchableOpacity>
@@ -117,7 +83,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
             <Text style={[styles.teachingBullet, { color: colors.muted }]}>
               • Deep links (devxtools://lab?scenario={scenario})
             </Text>
-            <Text style={[styles.teachingText, { color: colors.muted }]} style={{ marginTop: 12 }}>
+            <Text style={[styles.teachingText, { color: colors.muted, marginTop: 12 }]}>
               Write once, use everywhere.
             </Text>
           </View>

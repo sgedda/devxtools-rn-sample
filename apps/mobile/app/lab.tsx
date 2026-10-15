@@ -10,7 +10,7 @@ import {
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
-import { useLab, type DataSource } from '@/src/lab/LabContext';
+import { useLab } from '@/src/lab/LabContext';
 import { scenarios, scenarioLabels, type ScenarioName } from '@/src/mocks/scenarios';
 import { CodeViewer } from '@/components/CodeViewer';
 
@@ -18,7 +18,7 @@ export default function LabModal() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
-  const { dataSource, scenario, setDataSource, selectScenario, requestLog } = useLab();
+  const { dataSource, scenario, setDataSource, setScenario, selectScenario, requestLog } = useLab();
   const params = useLocalSearchParams<{ scenario?: string }>();
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();
@@ -78,7 +78,7 @@ export default function LabModal() {
           </Text>
 
           <View style={styles.segmentedControl}>
-            {(['real', 'msw', 'mockifyer'] as DataSource[]).map(source => (
+            {(['real', 'msw'] as const).map(source => (
               <TouchableOpacity
                 key={source}
                 style={[
@@ -87,31 +87,24 @@ export default function LabModal() {
                     backgroundColor: dataSource === source ? colors.tint : colors.surface,
                     borderColor: dataSource === source ? colors.tint : colors.border,
                   },
-                  source === 'mockifyer' && styles.segmentDisabled,
                 ]}
                 onPress={() => handleDataSourceChange(source)}
-                disabled={source === 'mockifyer'}
                 accessibilityRole="button"
                 accessibilityState={{ selected: dataSource === source }}>
                 <Text
                   style={[
                     styles.segmentText,
                     {
-                      color:
-                        dataSource === source
-                          ? '#fff'
-                          : source === 'mockifyer'
-                            ? colors.muted
-                            : colors.text,
+                      color: dataSource === source ? '#fff' : colors.text,
                     },
                   ]}>
-                  {source === 'real' ? 'Real' : source === 'msw' ? 'MSW' : 'Mockifyer*'}
+                  {source === 'real' ? 'Real' : 'MSW'}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
           <Text style={[styles.note, { color: colors.muted }]}>
-            * Mockifyer replay is stubbed in this demo
+            Mockifyer (record & replay) comes in Tutorial 01b →
           </Text>
         </View>
 
@@ -429,5 +422,16 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     fontSize: 17,
+  },
+  clearButton: {
+    padding: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

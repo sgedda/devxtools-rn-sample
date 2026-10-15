@@ -33,7 +33,7 @@ export default function TasksScreen() {
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { addLogEntry, dataSource, scenario } = useLab();
+  const { dataSource, scenario } = useLab();
   const [isOnline, setIsOnline] = React.useState(true);
   const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set());
@@ -60,40 +60,8 @@ export default function TasksScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['tasks'],
-    queryFn: async () => {
-      const startTime = Date.now();
-      try {
-        const result = await apiClient.getTasks();
-        const duration = Date.now() - startTime;
-
-        addLogEntry({
-          id: `${Date.now()}`,
-          timestamp: Date.now(),
-          method: 'GET',
-          url: '/tasks',
-          status: 200,
-          duration,
-          source: dataSource === 'real' ? 'real' : dataSource === 'msw' ? 'msw' : 'mockifyer',
-          scenario: scenario || undefined,
-        });
-
-        return result;
-      } catch (err) {
-        const duration = Date.now() - startTime;
-        addLogEntry({
-          id: `${Date.now()}`,
-          timestamp: Date.now(),
-          method: 'GET',
-          url: '/tasks',
-          status: err instanceof ApiError ? err.status : undefined,
-          duration,
-          source: dataSource === 'real' ? 'real' : dataSource === 'msw' ? 'msw' : 'mockifyer',
-          scenario: scenario || undefined,
-        });
-        throw err;
-      }
-    },
-    retry: 1,
+    queryFn: () => apiClient.getTasks(),
+    retry: dataSource === 'msw' && scenario ? false : 1,
   });
 
   const toggleMutation = useMutation({
@@ -288,13 +256,23 @@ export default function TasksScreen() {
         <Text style={[styles.emptyText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
           Tap the + button above to add your first task
         </Text>
+        {dataSource === 'msw' && scenario && (
+          <Text style={[styles.simulatedCaption, { color: colors.muted }]} maxFontSizeMultiplier={1.1} testID="simulated-caption">
+            Simulated by MSW · {scenarioLabels[scenario]}
+          </Text>
+        )}
       </View>
     );
   };
 
   const renderError = () => {
-    const errorMessage =
+    let errorMessage =
       error instanceof ApiError ? error.message : "Couldn't load tasks. Please try again.";
+    
+    // Special handling for offline scenario
+    if (scenario === 'offline' && error instanceof ApiError && !error.status) {
+      errorMessage = 'No network connection (simulated by MSW with HttpResponse.error())';
+    }
 
     return (
       <View style={styles.errorContainer}>
@@ -304,9 +282,14 @@ export default function TasksScreen() {
         <Text style={[styles.errorText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
           {errorMessage}
         </Text>
-        {!isOnline && (
+        {!isOnline && !scenario && (
           <Text style={[styles.errorText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
             You appear to be offline. Check your connection.
+          </Text>
+        )}
+        {dataSource === 'msw' && scenario && (
+          <Text style={[styles.simulatedCaption, { color: colors.muted }]} maxFontSizeMultiplier={1.1} testID="simulated-caption">
+            Simulated by MSW · {scenarioLabels[scenario]}
           </Text>
         )}
         <Text style={[styles.errorSubtext, { color: colors.muted }]} maxFontSizeMultiplier={1.1}>
@@ -620,5 +603,11 @@ const styles = StyleSheet.create({
   snackbarAction: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  simulatedCaption: {
+    fontSize: 12,
+    marginTop: spacing.md,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

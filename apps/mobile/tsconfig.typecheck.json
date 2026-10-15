@@ -1,4 +1,9 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "app/**/*", "components/**/*", "__tests__/**/*"],
+  "exclude": ["node_modules", "dist", ".expo"]
 }

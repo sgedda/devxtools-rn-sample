@@ -16,10 +16,6 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 10, // 10 seconds
-      retry: (failureCount) => {
-        // Don't retry when a scenario is active - we want to see the mocked failure
-        return failureCount < 1;
-      },
     },
   },
 });
@@ -84,6 +80,8 @@ function RootLayoutNav() {
           presentation: 'modal',
           headerShown: true,
           statusBarStyle: 'auto',
+          headerLeftContainerStyle: { paddingLeft: 16 },
+          headerRightContainerStyle: { paddingRight: 16 },
         }}
       />
       <Stack.Screen
@@ -93,6 +91,8 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'Lab',
+          headerLeftContainerStyle: { paddingLeft: 16 },
+          headerRightContainerStyle: { paddingRight: 16 },
         }}
       />
       <Stack.Screen
