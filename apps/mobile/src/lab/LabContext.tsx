@@ -84,23 +84,43 @@ export function LabProvider({ children }: { children: ReactNode }) {
         url: string;
         status?: number;
         duration?: number;
-        source?: 'real' | 'msw';
-        scenario?: string;
       }) => {
-        // Entry already has source and scenario stamped at send time
-        const logEntry: RequestLogEntry = {
-          ...entry,
-          source: entry.source || 'real',
-          scenario: entry.scenario,
-        };
-        setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
+        // Look up source from requestSourcesRef - it was stamped by MSW events
+        const sourceData = requestSourcesRef.current.get(entry.id);
+        const source = sourceData?.source || 'real';
+        const handler = sourceData?.handler;
+
+        console.log(
+          `[LAB] Logging request ${entry.id.slice(0, 30)}... source=${source}, scenario=${scenarioRef.current}`,
+          { sourceData, entry }
+        );
+
+        setRequestLog(prev => {
+          const newLog = [
+            {
+              ...entry,
+              source,
+              handler,
+              scenario: scenarioRef.current,
+            },
+            ...prev,
+          ].slice(0, 50);
+          return newLog;
+        });
       }
     );
 
-    // Callback from MSW lifecycle events
+    // Callback from native.ts for MSW worker lifecycle events
     setRequestSourceCallback((requestId: string, source: 'msw' | 'real', handler?: string) => {
+      // Stamp the source at MSW event time
+      console.log(
+        `[LAB] MSW event: requestId=${requestId.slice(0, 30)}..., source=${source}, handler=${handler}`
+      );
       requestSourcesRef.current.set(requestId, { source, handler });
     });
+
+    // Callback for client.ts to check current data source
+    setDataSourceGetter(() => dataSourceRef.current);
 
     return () => {
       setRequestLogCallback(() => {});
