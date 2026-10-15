@@ -24,7 +24,7 @@ describe('API Integration Tests', () => {
     expect(Array.isArray(data.tasks)).toBe(true);
   });
 
-  it('should create a new task', async () => {
+  it('should create a new task with valid title', async () => {
     const req = new Request('http://localhost/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -35,8 +35,36 @@ describe('API Integration Tests', () => {
 
     expect(res.status).toBe(201);
     expect(data.task).toHaveProperty('id');
+    expect(data.task.id).toMatch(/^[0-9a-f-]{36}$/); // UUID format
     expect(data.task).toHaveProperty('title', 'Test task');
     expect(data.task).toHaveProperty('completed', false);
+  });
+
+  it('should reject empty title', async () => {
+    const req = new Request('http://localhost/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: '   ' }),
+    });
+    const res = await app.fetch(req);
+    const data = (await res.json()) as { error: string };
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe('Title cannot be empty');
+  });
+
+  it('should reject title over 200 characters', async () => {
+    const longTitle = 'a'.repeat(201);
+    const req = new Request('http://localhost/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: longTitle }),
+    });
+    const res = await app.fetch(req);
+    const data = (await res.json()) as { error: string };
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe('Title must be 200 characters or less');
   });
 
   it('should toggle task completion', async () => {
@@ -63,6 +91,30 @@ describe('API Integration Tests', () => {
     expect(toggleData.task.completed).toBe(true);
   });
 
+  it('should reject updating task title to empty', async () => {
+    // First create a task
+    const createReq = new Request('http://localhost/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Update test' }),
+    });
+    const createRes = await app.fetch(createReq);
+    const createData = (await createRes.json()) as TaskResponse;
+    const { task } = createData;
+
+    // Try to update with empty title
+    const updateReq = new Request(`http://localhost/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: '   ' }),
+    });
+    const updateRes = await app.fetch(updateReq);
+    const updateData = (await updateRes.json()) as { error: string };
+
+    expect(updateRes.status).toBe(400);
+    expect(updateData.error).toBe('Title cannot be empty');
+  });
+
   it('should delete a task', async () => {
     // First create a task
     const createReq = new Request('http://localhost/tasks', {
@@ -86,13 +138,13 @@ describe('API Integration Tests', () => {
   });
 
   it('should return 404 for non-existent task', async () => {
-    const req = new Request('http://localhost/tasks/999999');
+    const req = new Request('http://localhost/tasks/00000000-0000-0000-0000-000000000000');
     const res = await app.fetch(req);
 
     expect(res.status).toBe(404);
   });
 
-  it('should return 400 for invalid task creation', async () => {
+  it('should return 400 for missing title', async () => {
     const req = new Request('http://localhost/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

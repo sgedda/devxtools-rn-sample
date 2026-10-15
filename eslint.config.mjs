@@ -40,6 +40,9 @@ export default [
       '*.config.mjs',
       '**/*.test.ts',
       '**/*.test.tsx',
+      'apps/mobile/jest-setup.ts',
+      'apps/mobile/jest.config.js',
+      'apps/mobile/src/mocks/server.test-setup.ts',
     ],
   },
 ];

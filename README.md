@@ -1,21 +1,27 @@
 # devxtools.dev Tutorial Series - Sample App
 
-> React Native (Expo) + Node.js backend monorepo for the devxtools.dev tutorial series
+> React Native (Expo) + Node.js backend monorepo demonstrating API mocking, testing, and observability
 
-This repository contains a fully-typed, production-ready monorepo showcasing modern React Native development with a Node.js backend. It serves as the foundation for a tutorial series covering API mocking, E2E testing, and observability.
+This repository contains a learning-focused monorepo that teaches modern React Native development practices. It features an interactive task management app that showcases **API mocking with MSW**, deterministic testing, and observable network behavior.
 
-## 📋 What's Inside
+## 🎯 What This App Teaches
 
-A simple **tasks/notes app** with list, create, toggle, and delete operations. The architecture demonstrates:
+This is a **teaching demo** that makes testing tools visible and shows why they're needed:
 
-- ✅ Modern npm workspaces monorepo
-- ✅ Latest stable versions (verified October 15, 2026)
-- ✅ Full TypeScript coverage
-- ✅ Shared types between frontend and backend
-- ✅ Comprehensive testing setup
-- ✅ CI/CD with GitHub Actions
-- ✅ Linting and formatting
-- ✅ Clear documentation
+1. **The Problem**: Your backend is slow, flaky, unfinished, or offline—and you can't reproduce edge cases
+2. **The Solution**: Intercept requests at the network layer with MSW (Mock Service Worker)
+3. **The Experience**: Switch between real API and mocked data **without changing your app code**
+
+### Key Features
+
+- 🔄 **Live data source switching** - Toggle between real API, MSW mocks, and recorded fixtures
+- 🎭 **One-tap scenarios** - Instantly trigger empty, slow, 500 error, validation, offline, and flaky states
+- 📊 **Network inspector** - See every request marked as real, mocked, or replayed
+- 🧪 **Same mocks in tests** - Jest tests reuse the exact same MSW handlers
+- 🔗 **Deep-link scenarios** - `devxtools://lab?scenario=error500` for deterministic E2E testing
+- ♿ **Full accessibility** - testIDs, screen reader support, WCAG compliance
+
+The app demonstrates that **the UI code never changes**—only the network layer does. This is the core value of API mocking.
 
 ## 🏗️ Architecture
 
@@ -167,15 +173,19 @@ Located in `apps/api/src/app.test.ts`:
 
 - Integration tests for all endpoints
 - Request/response validation
-- Error handling scenarios
+- Validation error scenarios (empty titles, length limits)
+- UUID generation testing
 
-### Mobile Tests (Jest + React Native Testing Library)
+### Mobile Tests (Jest + MSW)
 
-Located in `apps/mobile/src/components/WelcomeMessage.test.tsx`:
+Located in `apps/mobile/src/api/__tests__/client.test.ts`:
 
-- Component rendering tests
-- Demonstration of testing setup
-- Ready for expansion with API integration tests
+- API client tests using MSW handlers
+- Demonstrates **the same handlers work in both dev and tests**
+- Scenarios: success, empty, 500 error, validation
+- Ready for component testing with React Native Testing Library
+
+The mobile test setup (`jest-setup.ts`) configures MSW for Node.js test environment. This proves the core value: **write handlers once, use everywhere**.
 
 ## 🔄 CI/CD
 
@@ -189,25 +199,32 @@ GitHub Actions CI runs on every push and PR:
 
 See `.github/workflows/ci.yml` for configuration.
 
-## 📚 Tutorial Series Roadmap
+## 📚 Tutorial Series (Planned)
 
-This repository supports the following tutorials:
+This repository will support the following tutorials:
 
 ### 1. API Mocking (`tutorials/01-api-mocking/`)
 
-- Setting up MSW (Mock Service Worker)
-- Creating mock handlers
-- Mocking in tests vs development
-- Alternative: Mockifyer
+**Status**: Core implementation complete, tutorial content coming soon
+
+- ✅ MSW integrated in the app with live switching
+- ✅ Scenarios: empty, slow, 500, 400, offline, flaky
+- ✅ Network inspector showing mocked vs real requests
+- ✅ Jest tests reusing MSW handlers
+- 🚧 Mockifyer replay mode (stubbed)
+- 📝 Tutorial walkthrough content (planned)
 
 ### 2. E2E Testing (`tutorials/02-e2e-testing/`)
 
-- Detox setup and configuration
-- Writing E2E test flows
-- Maestro as an alternative
-- Running E2E in CI
+**Status**: Planned
+
+- testIDs added throughout the UI for E2E testing
+- Deep-link scenario support (`devxtools://lab?scenario=...`)
+- Detox and Maestro comparison (coming soon)
 
 ### 3. Observability & Logging (`tutorials/03-observability/`)
+
+**Status**: Planned
 
 - Structured logging setup
 - Client-to-server log aggregation
