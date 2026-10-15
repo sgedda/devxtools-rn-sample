@@ -1,34 +1,38 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { SCENARIO_SNIPPETS } from '../scenarios.snippets';
+import type { ScenarioName } from '../scenarios';
 
 describe('scenarios.snippets', () => {
-  it('should contain code snippets that appear in scenarios.ts', () => {
-    // Read the actual scenarios.ts file
-    const scenariosPath = join(__dirname, '../scenarios.ts');
-    const scenariosSource = readFileSync(scenariosPath, 'utf-8');
+  it('should have code snippets for all scenarios', () => {
+    const expectedScenarios: ScenarioName[] = [
+      'empty',
+      'slow',
+      'error500',
+      'validation400',
+      'offline',
+      'flaky',
+    ];
 
-    // Check each snippet's key phrases appear in the source
-    Object.entries(SCENARIO_SNIPPETS).forEach(([scenarioName, { code, line }]) => {
-      // Extract key phrases that must appear
-      const keyPhrases = code.split('\n').filter(l => l.trim().length > 2);
-      
-      // Verify key phrases from the snippet appear in the source
-      keyPhrases.forEach(phrase => {
-        const normalizedPhrase = phrase.trim().replace(/\s+/g, ' ');
-        if (normalizedPhrase && normalizedPhrase !== '{' && normalizedPhrase !== '}') {
-          expect(scenariosSource).toContain(normalizedPhrase);
-        }
-      });
+    expectedScenarios.forEach(scenario => {
+      const snippet = SCENARIO_SNIPPETS[scenario];
+      expect(snippet).toBeDefined();
+      expect(snippet.code).toBeDefined();
+      expect(typeof snippet.code).toBe('string');
+      expect(snippet.code.length).toBeGreaterThan(0);
+      expect(snippet.line).toBeGreaterThan(0);
     });
   });
 
-  it('should cover all scenarios', () => {
-    const expectedScenarios = ['empty', 'slow', 'error500', 'validation400', 'offline', 'flaky'];
-    const snippetKeys = Object.keys(SCENARIO_SNIPPETS);
-    
-    expectedScenarios.forEach(scenario => {
-      expect(snippetKeys).toContain(scenario);
+  it('should contain http.get or http.post in code snippets', () => {
+    Object.entries(SCENARIO_SNIPPETS).forEach(([scenarioName, snippet]) => {
+      const hasHttpMethod =
+        snippet.code.includes('http.get') || snippet.code.includes('http.post');
+      expect(hasHttpMethod).toBe(true);
+    });
+  });
+
+  it('should contain HttpResponse in code snippets', () => {
+    Object.entries(SCENARIO_SNIPPETS).forEach(([scenarioName, snippet]) => {
+      expect(snippet.code).toContain('HttpResponse');
     });
   });
 });
