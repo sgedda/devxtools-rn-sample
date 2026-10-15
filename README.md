@@ -178,14 +178,27 @@ Located in `apps/api/src/app.test.ts`:
 
 ### Mobile Tests (Jest + MSW)
 
-Located in `apps/mobile/src/api/__tests__/client.test.ts`:
+Located in `apps/mobile/src/api/__tests__/client.test.ts` and `app/(tabs)/__tests__/TasksScreen.test.tsx`:
 
-- API client tests using MSW handlers
+- **API client tests** using MSW handlers (5 tests)
+- **Component tests** rendering Tasks screen against MSW scenarios (2 tests)
 - Demonstrates **the same handlers work in both dev and tests**
 - Scenarios: success, empty, 500 error, validation
-- Ready for component testing with React Native Testing Library
+- Ready for expansion with React Native Testing Library
 
 The mobile test setup (`jest-setup.ts`) configures MSW for Node.js test environment. This proves the core value: **write handlers once, use everywhere**.
+
+### MSW Version: Why 2.7.0?
+
+This project uses **MSW 2.7.0** instead of the latest 3.x because:
+
+1. **MSW 3.x is ESM-only** - requires Node.js native ESM support and doesn't provide a `/native` export
+2. **No React Native package** - `@msw/react-native` doesn't exist on npm
+3. **Jest compatibility** - MSW 2.x works seamlessly with Jest's CommonJS mode in React Native
+4. **Production-ready** - MSW 2.x is stable, widely used, and actively maintained
+5. **Same teaching concept** - Demonstrates identical API mocking principles as 3.x
+
+MSW 2.7.0 ships with the documented `msw/native` export and polyfills needed for React Native. The teaching concept (write handlers once, use in dev and tests) is identical across versions.
 
 ## 🔄 CI/CD
 
