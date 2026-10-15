@@ -23,57 +23,61 @@ function getCurrentScenario() {
 export async function startMocking() {
   // Wire up lifecycle events for request source tracking
   server.events.on('request:start', ({ request }: { request: Request; requestId: string }) => {
-    // Track request start with current scenario - use URL as key
-    const url = request.url;
-    requestMap.set(url, {
-      scenario: getCurrentScenario(),
-      startTime: Date.now(),
-    });
+    // Read unique request ID from header
+    const requestId = request.headers.get('x-devx-req-id');
+    if (requestId) {
+      requestMap.set(requestId, {
+        scenario: getCurrentScenario(),
+        startTime: Date.now(),
+      });
+    }
   });
 
   server.events.on('response:mocked', ({ request }: { request: Request }) => {
-    const url = request.url;
-    const tracked = requestMap.get(url);
-    if (tracked && requestSourceCallback) {
-      requestSourceCallback(url, 'msw', tracked.scenario || undefined);
+    const requestId = request.headers.get('x-devx-req-id');
+    if (requestId) {
+      const tracked = requestMap.get(requestId);
+      if (tracked && requestSourceCallback) {
+        requestSourceCallback(requestId, 'msw', tracked.scenario || undefined);
+      }
+      requestMap.delete(requestId);
     }
-    requestMap.delete(url);
   });
 
   server.events.on('request:unhandled', ({ request }: { request: Request }) => {
-    const url = request.url;
-    const tracked = requestMap.get(url);
-    if (tracked && requestSourceCallback) {
-      requestSourceCallback(url, 'real', undefined);
+    const requestId = request.headers.get('x-devx-req-id');
+    if (requestId) {
+      const tracked = requestMap.get(requestId);
+      if (tracked && requestSourceCallback) {
+        requestSourceCallback(requestId, 'real', undefined);
+      }
+      requestMap.delete(requestId);
     }
-    requestMap.delete(url);
   });
 
   server.events.on('response:bypass', ({ request }: { request: Request }) => {
-    const url = request.url;
-    const tracked = requestMap.get(url);
-    if (tracked && requestSourceCallback) {
-      requestSourceCallback(url, 'real', undefined);
+    const requestId = request.headers.get('x-devx-req-id');
+    if (requestId) {
+      const tracked = requestMap.get(requestId);
+      if (tracked && requestSourceCallback) {
+        requestSourceCallback(requestId, 'real', undefined);
+      }
+      requestMap.delete(requestId);
     }
-    requestMap.delete(url);
   });
 
   server.listen({
     onUnhandledRequest: 'bypass',
   });
-
-  console.log('[MSW] Mocking enabled');
 }
 
 export function stopMocking() {
   server.close();
   requestMap.clear();
-  console.log('[MSW] Mocking disabled');
 }
 
 export function applyScenario(scenarioHandlers: RequestHandler[]) {
   server.use(...scenarioHandlers);
-  console.log('[MSW] Applied scenario');
 }
 
 export function setCurrentScenario(scenario: string | null) {
@@ -83,7 +87,6 @@ export function setCurrentScenario(scenario: string | null) {
 export function resetHandlers() {
   server.resetHandlers();
   currentScenario = null;
-  console.log('[MSW] Reset handlers');
 }
 
 // Re-export resetMockTasks for convenience

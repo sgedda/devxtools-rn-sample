@@ -74,19 +74,27 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 
   const startTime = Date.now();
   const method = options.method || 'GET';
+  
+  // Generate unique request ID and add as header
+  const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  const headers = {
+    ...options.headers,
+    'x-devx-req-id': requestId,
+  };
 
   try {
     const response = await fetch(url, {
       ...options,
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
-    // Log the response - look up source from MSW event tracking
+    // Log the response - use requestId as key for MSW event tracking
     const duration = Date.now() - startTime;
     if (requestLogCallback) {
       requestLogCallback({
-        id: url, // Use URL as the ID to match MSW event tracking
+        id: requestId,
         timestamp: startTime,
         method,
         url,
@@ -103,7 +111,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
     const duration = Date.now() - startTime;
     if (requestLogCallback) {
       requestLogCallback({
-        id: url, // Use URL as the ID
+        id: requestId,
         timestamp: startTime,
         method,
         url,
