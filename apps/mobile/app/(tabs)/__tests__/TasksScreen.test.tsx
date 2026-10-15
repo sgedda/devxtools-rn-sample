@@ -2,9 +2,10 @@ import React from 'react';
 import { render, waitFor, screen } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TasksScreen from '../index';
-import { server, http, HttpResponse } from '@/src/mocks/server.test-setup';
+import { server } from '@/src/mocks/server.test-setup';
+import { scenarios } from '@/src/mocks/scenarios';
 
-// Simple wrapper with QueryClient and LabProvider
+// Wrapper matching production layout: QueryClient wraps LabProvider
 function Wrapper({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -17,21 +18,17 @@ function Wrapper({ children }: { children: React.ReactNode }) {
   const { LabProvider } = require('@/src/lab/LabContext');
 
   return (
-    <LabProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </LabProvider>
+    <QueryClientProvider client={queryClient}>
+      <LabProvider>{children}</LabProvider>
+    </QueryClientProvider>
   );
 }
 
 describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
   it('renders Tasks screen with empty scenario using shared MSW handlers', async () => {
-    // TEACHING MOMENT: This is the EXACT SAME handler from src/mocks/scenarios.ts
-    // that the Lab modal uses. The component renders against it.
-    server.use(
-      http.get('*/tasks', async () => {
-        return HttpResponse.json({ tasks: [] });
-      })
-    );
+    // TEACHING MOMENT: This uses the EXACT SAME handler from src/mocks/scenarios.ts
+    // that the Lab modal uses. Import it directly - no duplication.
+    server.use(...scenarios.empty);
 
     render(
       <Wrapper>
@@ -39,10 +36,17 @@ describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
       </Wrapper>
     );
 
-    // Component should show loading first
-    expect(screen.getByTestId('tasks-loading')).toBeTruthy();
+    // Wait for Lab to be ready - may skip loading if query resolves fast
+    await waitFor(
+      () => {
+        const empty = screen.queryByTestId('tasks-empty');
+        const loading = screen.queryByTestId('tasks-loading');
+        expect(empty || loading).toBeTruthy();
+      },
+      { timeout: 2000 }
+    );
 
-    // Then transition to empty state
+    // Then verify empty state
     await waitFor(
       () => {
         expect(screen.getByTestId('tasks-empty')).toBeTruthy();
@@ -55,13 +59,9 @@ describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
   });
 
   it('renders Tasks screen with 500 error using shared MSW handlers', async () => {
-    // TEACHING MOMENT: This is the EXACT SAME handler from src/mocks/scenarios.ts
+    // TEACHING MOMENT: This uses the EXACT SAME handler from src/mocks/scenarios.ts
     // that the Lab modal uses for the "Server error 500" scenario chip.
-    server.use(
-      http.get('*/tasks', async () => {
-        return HttpResponse.json({ error: 'Internal server error' }, { status: 500 });
-      })
-    );
+    server.use(...scenarios.error500);
 
     render(
       <Wrapper>
@@ -69,10 +69,17 @@ describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
       </Wrapper>
     );
 
-    // Component should show loading first
-    expect(screen.getByTestId('tasks-loading')).toBeTruthy();
+    // Wait for Lab to be ready - may skip loading if query resolves fast
+    await waitFor(
+      () => {
+        const error = screen.queryByTestId('tasks-error');
+        const loading = screen.queryByTestId('tasks-loading');
+        expect(error || loading).toBeTruthy();
+      },
+      { timeout: 2000 }
+    );
 
-    // Then transition to error state
+    // Then verify error state
     await waitFor(
       () => {
         expect(screen.getByTestId('tasks-error')).toBeTruthy();

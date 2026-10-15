@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@devxtools/shared": "*",
+    "@hono/node-server": "^2.1.5",
     "hono": "^4.13.13"
   },
   "devDependencies": {

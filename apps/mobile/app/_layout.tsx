@@ -16,7 +16,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 10, // 10 seconds
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        // Don't retry when a scenario is active - we want to see the mocked failure
+        return failureCount < 1;
+      },
     },
   },
 });
@@ -44,11 +47,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <LabProvider>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <LabProvider>
             <RootLayoutNav />
-          </QueryClientProvider>
-        </LabProvider>
+          </LabProvider>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

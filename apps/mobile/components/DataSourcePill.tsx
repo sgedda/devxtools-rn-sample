@@ -14,12 +14,16 @@ export function DataSourcePill() {
 
   const getLabel = () => {
     const sourceLabels: Record<DataSource, string> = {
-      real: '● Real API',
-      msw: '● Mocked',
-      mockifyer: '● Recorded',
+      real: 'Real API',
+      msw: 'Mocked',
+      mockifyer: 'Recorded',
     };
 
-    return sourceLabels[dataSource];
+    const baseLabel = sourceLabels[dataSource];
+    if (scenario && dataSource === 'msw') {
+      return `${baseLabel} · ${scenarioLabels[scenario as ScenarioName]}`;
+    }
+    return baseLabel;
   };
 
   const getColor = () => {

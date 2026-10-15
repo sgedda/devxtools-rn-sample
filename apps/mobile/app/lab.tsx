@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -17,7 +18,7 @@ export default function LabModal() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
-  const { dataSource, scenario, setDataSource, setScenario, requestLog } = useLab();
+  const { dataSource, scenario, setDataSource, selectScenario, requestLog } = useLab();
   const params = useLocalSearchParams<{ scenario?: string }>();
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();
@@ -25,8 +26,7 @@ export default function LabModal() {
   // Handle deep link scenario parameter
   useEffect(() => {
     if (params.scenario && params.scenario in scenarios) {
-      setDataSource('msw');
-      setScenario(params.scenario as ScenarioName);
+      selectScenario(params.scenario as ScenarioName);
     }
   }, [params.scenario]);
 
@@ -39,15 +39,20 @@ export default function LabModal() {
   };
 
   const handleScenarioChange = (newScenario: ScenarioName) => {
-    if (dataSource !== 'msw') {
-      setDataSource('msw');
-    }
-    setScenario(scenario === newScenario ? null : newScenario);
+    selectScenario(newScenario);
   };
 
   const handleShowCode = (scenarioKey: ScenarioName) => {
     setSelectedScenario(scenarioKey);
     setShowCodeViewer(true);
+  };
+
+  const handleClose = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   };
 
   return (
@@ -57,7 +62,7 @@ export default function LabModal() {
           title: 'Lab',
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={handleClose}
               accessibilityRole="button"
               accessibilityLabel="Close"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -242,6 +247,7 @@ export default function LabModal() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Learn More</Text>
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor: colors.surface }]}
+            onPress={() => Linking.openURL('https://mswjs.io/docs/')}
             accessibilityRole="link">
             <Text style={[styles.linkText, { color: colors.tint }]}>
               MSW Documentation →
@@ -249,6 +255,7 @@ export default function LabModal() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor: colors.surface }]}
+            onPress={() => Linking.openURL('https://devxtools.dev/tools/msw/')}
             accessibilityRole="link">
             <Text style={[styles.linkText, { color: colors.tint }]}>
               devxtools.dev/tools/msw →

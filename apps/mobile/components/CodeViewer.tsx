@@ -18,53 +18,17 @@ interface CodeViewerProps {
   scenario?: ScenarioName;
 }
 
-const HANDLER_CODE: Record<ScenarioName, string> = {
-  empty: `// Empty scenario handler
-http.get('*/tasks', async () => {
-  return HttpResponse.json({ tasks: [] });
-});`,
-  slow: `// Slow (3s) scenario handler
-http.get('*/tasks', async () => {
-  await delay(3000);
-  return HttpResponse.json({
-    tasks: [{
-      id: 'slow-1',
-      title: 'This took 3 seconds to load',
-      completed: false,
-      createdAt: new Date().toISOString(),
-    }],
-  });
-});`,
-  error500: `// Server error 500 scenario handler
-http.get('*/tasks', async () => {
-  return HttpResponse.json(
-    { error: 'Internal server error' },
-    { status: 500 }
-  );
-});`,
-  validation400: `// Validation 400 scenario handler
-http.post('*/tasks', async () => {
-  return HttpResponse.json(
-    { error: 'Title cannot be empty' },
-    { status: 400 }
-  );
-});`,
-  offline: `// Offline scenario handler
-http.get('*/tasks', async () => {
-  return HttpResponse.error();
-});`,
-  flaky: `// Flaky (1 in 3 fails) scenario handler
-let counter = 0;
-http.get('*/tasks', async () => {
-  counter++;
-  if (counter % 3 === 0) {
-    return HttpResponse.json(
-      { error: 'Service temporarily unavailable' },
-      { status: 503 }
-    );
-  }
-  return HttpResponse.json({ tasks: [...] });
-});`,
+// Reference the actual source file
+const GITHUB_BASE = 'https://github.com/sgedda/devxtools-rn-sample/blob/main';
+const SCENARIO_FILE = 'apps/mobile/src/mocks/scenarios.ts';
+
+const SCENARIO_DESCRIPTIONS: Record<ScenarioName, { description: string; line: number }> = {
+  empty: { description: 'Returns an empty tasks array', line: 12 },
+  slow: { description: 'Delays response by 3 seconds', line: 18 },
+  error500: { description: 'Returns HTTP 500 server error', line: 29 },
+  validation400: { description: 'Returns HTTP 400 validation error on POST', line: 36 },
+  offline: { description: 'Simulates network error', line: 42 },
+  flaky: { description: 'Fails every 3rd request (HTTP 503)', line: 49 },
 };
 
 export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
@@ -73,7 +37,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
 
   if (!scenario) return null;
 
-  const code = HANDLER_CODE[scenario];
+  const info = SCENARIO_DESCRIPTIONS[scenario];
 
   return (
     <Modal
@@ -83,7 +47,7 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
       onRequestClose={onClose}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.title, { color: colors.text }]}>Handler Code</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Handler: {scenario}</Text>
           <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
@@ -94,16 +58,41 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
         </View>
 
         <ScrollView style={styles.content}>
-          <View style={[styles.codeBlock, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.code, { color: colors.text }]}>{code}</Text>
+          <View style={[styles.infoBox, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.infoText, { color: colors.text }]}>{info.description}</Text>
           </View>
 
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              This handler is in:
+              This handler is defined in:
             </Text>
-            <Text style={[styles.path, { color: colors.muted }]}>
-              apps/mobile/src/mocks/scenarios.ts
+            <TouchableOpacity
+              style={[styles.link, { backgroundColor: colors.surface }]}
+              onPress={() => Linking.openURL(`${GITHUB_BASE}/${SCENARIO_FILE}#L${info.line}`)}
+              accessibilityRole="link">
+              <Text style={[styles.path, { color: colors.tint }]}>
+                {SCENARIO_FILE}:{info.line}
+              </Text>
+              <Text style={[styles.linkText, { color: colors.tint }]}>View on GitHub →</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.teachingBox, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.teachingTitle, { color: colors.text }]}>💡 Teaching Point</Text>
+            <Text style={[styles.teachingText, { color: colors.muted }]}>
+              This is the SAME handler used in:
+            </Text>
+            <Text style={[styles.teachingBullet, { color: colors.muted }]}>
+              • This Lab UI (network interception)
+            </Text>
+            <Text style={[styles.teachingBullet, { color: colors.muted }]}>
+              • Jest tests (component & API tests)
+            </Text>
+            <Text style={[styles.teachingBullet, { color: colors.muted }]}>
+              • Deep links (devxtools://lab?scenario={scenario})
+            </Text>
+            <Text style={[styles.teachingText, { color: colors.muted }]} style={{ marginTop: 12 }}>
+              Write once, use everywhere.
             </Text>
           </View>
 
@@ -125,13 +114,6 @@ export function CodeViewer({ visible, onClose, scenario }: CodeViewerProps) {
                 devxtools.dev/tools/msw →
               </Text>
             </TouchableOpacity>
-          </View>
-
-          <View style={[styles.note, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.noteText, { color: colors.muted }]}>
-              💡 The same handler is used in both the Lab UI and your Jest tests. Write once, use
-              everywhere.
-            </Text>
           </View>
         </ScrollView>
       </View>
@@ -163,15 +145,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.lg,
   },
-  codeBlock: {
-    padding: spacing.md,
-    borderRadius: 8,
+  infoBox: {
+    padding: spacing.lg,
+    borderRadius: 12,
     marginBottom: spacing.xl,
   },
-  code: {
-    fontFamily: 'monospace',
-    fontSize: 13,
-    lineHeight: 20,
+  infoText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   section: {
     marginBottom: spacing.xl,
@@ -184,6 +166,7 @@ const styles = StyleSheet.create({
   path: {
     fontSize: 13,
     fontFamily: 'monospace',
+    marginBottom: spacing.xs,
   },
   link: {
     padding: spacing.md,
@@ -194,13 +177,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  note: {
+  teachingBox: {
     padding: spacing.lg,
     borderRadius: 12,
-    marginTop: spacing.lg,
+    marginBottom: spacing.xl,
   },
-  noteText: {
+  teachingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+  teachingText: {
     fontSize: 14,
     lineHeight: 22,
+    marginBottom: spacing.xs,
+  },
+  teachingBullet: {
+    fontSize: 14,
+    lineHeight: 22,
+    marginLeft: spacing.sm,
   },
 });

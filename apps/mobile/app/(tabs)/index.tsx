@@ -348,7 +348,7 @@ export default function TasksScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-screen">;
+    <View style={[styles.container, { backgroundColor: colors.background }]} testID="tasks-screen">
       {!isOnline && (
         <View style={[styles.offlineBanner, { backgroundColor: colors.surface }]} testID="offline-banner">
           <Text style={[styles.offlineText, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>

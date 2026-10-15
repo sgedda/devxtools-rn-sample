@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 import { startMocking, stopMocking, applyScenario, resetHandlers } from '../mocks/native';
 import { scenarios, type ScenarioName } from '../mocks/scenarios';
 import { resetMockTasks } from '../mocks/handlers';
@@ -9,13 +10,15 @@ export type DataSource = 'real' | 'msw' | 'mockifyer';
 interface LabContextType {
   dataSource: DataSource;
   scenario: ScenarioName | null;
-  setDataSource: (source: DataSource) => void;
-  setScenario: (scenario: ScenarioName | null) => void;
+  setDataSource: (source: DataSource) => Promise<void>;
+  setScenario: (scenario: ScenarioName | null) => Promise<void>;
+  selectScenario: (scenario: ScenarioName) => Promise<void>;
   requestLog: RequestLogEntry[];
   addLogEntry: (entry: RequestLogEntry) => void;
   clearLog: () => void;
   hasCompletedWalkthrough: boolean;
   completeWalkthrough: () => void;
+  labReady: boolean;
 }
 
 export interface RequestLogEntry {
@@ -27,6 +30,7 @@ export interface RequestLogEntry {
   duration?: number;
   source: 'real' | 'msw' | 'mockifyer';
   scenario?: string;
+  handler?: string;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
@@ -42,8 +46,16 @@ export function LabProvider({ children }: { children: ReactNode }) {
   const [scenario, setScenarioState] = useState<ScenarioName | null>(null);
   const [requestLog, setRequestLog] = useState<RequestLogEntry[]>([]);
   const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState(false);
+  const [labReady, setLabReady] = useState(false);
+  const queryClient = useQueryClient();
+  const dataSourceRef = useRef<DataSource>('real');
 
-  // Load persisted state on mount
+  // Keep ref in sync for deep link handling
+  useEffect(() => {
+    dataSourceRef.current = dataSource;
+  }, [dataSource]);
+
+  // Load persisted state on mount BEFORE first query
   useEffect(() => {
     async function loadState() {
       try {
@@ -55,13 +67,16 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
         if (savedSource) {
           setDataSourceState(savedSource as DataSource);
+          dataSourceRef.current = savedSource as DataSource;
           if (savedSource === 'msw') {
-            startMocking();
+            await startMocking();
           }
         }
 
-        if (savedScenario) {
+        if (savedScenario && savedSource === 'msw') {
           setScenarioState(savedScenario as ScenarioName);
+          // Apply the scenario BEFORE rendering
+          applyScenario(scenarios[savedScenario as ScenarioName]);
         }
 
         if (walkthroughComplete === 'true') {
@@ -69,6 +84,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Failed to load lab state:', error);
+      } finally {
+        // Signal that Lab is ready and queries can start
+        setLabReady(true);
       }
     }
 
@@ -77,18 +95,22 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
   const setDataSource = async (source: DataSource) => {
     setDataSourceState(source);
+    dataSourceRef.current = source;
     await AsyncStorage.setItem(STORAGE_KEYS.DATA_SOURCE, source);
 
     if (source === 'msw') {
-      startMocking();
+      await startMocking();
       if (scenario) {
+        resetHandlers();
+        resetMockTasks();
         applyScenario(scenarios[scenario]);
       }
     } else {
       stopMocking();
     }
 
-    // Clear request log when switching sources
+    // Reset queries so the UI refetches with new source
+    queryClient.resetQueries({ queryKey: ['tasks'] });
     setRequestLog([]);
   };
 
@@ -101,7 +123,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
       await AsyncStorage.removeItem(STORAGE_KEYS.SCENARIO);
     }
 
-    if (dataSource === 'msw') {
+    if (dataSourceRef.current === 'msw') {
       if (newScenario) {
         resetHandlers();
         resetMockTasks();
@@ -110,14 +132,38 @@ export function LabProvider({ children }: { children: ReactNode }) {
         resetHandlers();
         resetMockTasks();
       }
+
+      // Reset queries so the UI refetches with new scenario
+      queryClient.resetQueries({ queryKey: ['tasks'] });
     }
 
-    // Clear request log when changing scenarios
+    setRequestLog([]);
+  };
+
+  // Atomic scenario selection that switches to MSW if needed
+  const selectScenario = async (newScenario: ScenarioName) => {
+    if (dataSourceRef.current !== 'msw') {
+      // Switch to MSW first
+      setDataSourceState('msw');
+      dataSourceRef.current = 'msw';
+      await AsyncStorage.setItem(STORAGE_KEYS.DATA_SOURCE, 'msw');
+      await startMocking();
+    }
+
+    // Now apply the scenario
+    setScenarioState(newScenario);
+    await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
+    resetHandlers();
+    resetMockTasks();
+    applyScenario(scenarios[newScenario]);
+
+    // Reset queries
+    queryClient.resetQueries({ queryKey: ['tasks'] });
     setRequestLog([]);
   };
 
   const addLogEntry = (entry: RequestLogEntry) => {
-    setRequestLog(prev => [entry, ...prev].slice(0, 50)); // Keep last 50 entries
+    setRequestLog(prev => [entry, ...prev].slice(0, 50));
   };
 
   const clearLog = () => {
@@ -136,13 +182,15 @@ export function LabProvider({ children }: { children: ReactNode }) {
         scenario,
         setDataSource,
         setScenario,
+        selectScenario,
         requestLog,
         addLogEntry,
         clearLog,
         hasCompletedWalkthrough,
         completeWalkthrough,
+        labReady,
       }}>
-      {children}
+      {labReady ? children : null}
     </LabContext.Provider>
   );
 }
