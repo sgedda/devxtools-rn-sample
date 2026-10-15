@@ -49,11 +49,42 @@ export function LabProvider({ children }: { children: ReactNode }) {
   const [labReady, setLabReady] = useState(false);
   const queryClient = useQueryClient();
   const dataSourceRef = useRef<DataSource>('real');
+  const scenarioRef = useRef<ScenarioName | null>(null);
+  const requestSourcesRef = useRef<Map<string, { source: 'msw' | 'real'; handler?: string }>>(new Map());
 
-  // Keep ref in sync for deep link handling
+  // Keep refs in sync
   useEffect(() => {
     dataSourceRef.current = dataSource;
   }, [dataSource]);
+
+  useEffect(() => {
+    scenarioRef.current = scenario;
+  }, [scenario]);
+
+  // Wire up request logging callbacks
+  useEffect(() => {
+    // Callback from client.ts for all HTTP requests
+    setRequestLogCallback((entry) => {
+      const source = requestSourcesRef.current.get(entry.url);
+      const logEntry: RequestLogEntry = {
+        ...entry,
+        source: source?.source || 'real',
+        handler: source?.handler,
+        scenario: scenarioRef.current || undefined,
+      };
+      setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
+    });
+
+    // Callback from MSW lifecycle events
+    setRequestSourceCallback((requestId: string, source: 'msw' | 'real', handler?: string) => {
+      requestSourcesRef.current.set(requestId, { source, handler });
+    });
+
+    return () => {
+      setRequestLogCallback(null);
+      setRequestSourceCallback(null);
+    };
+  }, []);
 
   // Load persisted state on mount BEFORE first query
   useEffect(() => {
@@ -94,6 +125,10 @@ export function LabProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setDataSource = async (source: DataSource) => {
+    // Clear log BEFORE the data source change triggers refetch
+    setRequestLog([]);
+    requestSourcesRef.current.clear();
+
     setDataSourceState(source);
     dataSourceRef.current = source;
     await AsyncStorage.setItem(STORAGE_KEYS.DATA_SOURCE, source);
@@ -109,12 +144,15 @@ export function LabProvider({ children }: { children: ReactNode }) {
       stopMocking();
     }
 
-    // Reset queries so the UI refetches with new source
+    // Reset queries after log is cleared
     queryClient.resetQueries({ queryKey: ['tasks'] });
-    setRequestLog([]);
   };
 
   const setScenario = async (newScenario: ScenarioName | null) => {
+    // Clear log BEFORE the scenario change triggers refetch
+    setRequestLog([]);
+    requestSourcesRef.current.clear();
+
     setScenarioState(newScenario);
 
     if (newScenario) {
@@ -133,15 +171,17 @@ export function LabProvider({ children }: { children: ReactNode }) {
         resetMockTasks();
       }
 
-      // Reset queries so the UI refetches with new scenario
+      // Reset queries after log is cleared
       queryClient.resetQueries({ queryKey: ['tasks'] });
     }
-
-    setRequestLog([]);
   };
 
   // Atomic scenario selection that switches to MSW if needed
   const selectScenario = async (newScenario: ScenarioName) => {
+    // Clear log BEFORE the scenario change
+    setRequestLog([]);
+    requestSourcesRef.current.clear();
+
     if (dataSourceRef.current !== 'msw') {
       // Switch to MSW first
       setDataSourceState('msw');
@@ -157,9 +197,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
     resetMockTasks();
     applyScenario(scenarios[newScenario]);
 
-    // Reset queries
+    // Reset queries after log is cleared
     queryClient.resetQueries({ queryKey: ['tasks'] });
-    setRequestLog([]);
   };
 
   const addLogEntry = (entry: RequestLogEntry) => {

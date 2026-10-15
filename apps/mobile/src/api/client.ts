@@ -18,6 +18,22 @@ declare type RequestInit = {
   signal?: AbortSignal;
 };
 
+// Request logging callback
+type RequestLogCallback = (entry: {
+  id: string;
+  timestamp: number;
+  method: string;
+  url: string;
+  status?: number;
+  duration?: number;
+}) => void;
+
+let requestLogCallback: RequestLogCallback | null = null;
+
+export function setRequestLogCallback(callback: RequestLogCallback | null) {
+  requestLogCallback = callback;
+}
+
 function getApiUrl(): string {
   // Use EXPO_PUBLIC_API_URL if set
   const envApiUrl = typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_API_URL : undefined;
@@ -56,15 +72,47 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
+  // Log the request
+  const requestId = Math.random().toString(36).substring(7);
+  const startTime = Date.now();
+  const method = options.method || 'GET';
+
   try {
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
+
+    // Log the response
+    const duration = Date.now() - startTime;
+    if (requestLogCallback) {
+      requestLogCallback({
+        id: requestId,
+        timestamp: startTime,
+        method,
+        url,
+        status: response.status,
+        duration,
+      });
+    }
+
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
+
+    // Log the error
+    const duration = Date.now() - startTime;
+    if (requestLogCallback) {
+      requestLogCallback({
+        id: requestId,
+        timestamp: startTime,
+        method,
+        url,
+        duration,
+      });
+    }
+
     if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError('Request timed out. Please check your connection.');
     }

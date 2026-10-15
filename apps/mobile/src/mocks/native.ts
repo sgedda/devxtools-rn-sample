@@ -1,32 +1,93 @@
 import { setupServer } from 'msw/native';
-import { handlers } from './handlers';
+import { handlers, resetMockTasks } from './handlers';
 import type { RequestHandler } from 'msw';
 
-// Setup MSW server for React Native
-export const worker = setupServer(...handlers);
+export const server = setupServer(...handlers);
 
-// Start the worker
+// Track request sources for logging
+const requestSources = new Map<string, { source: 'msw' | 'real'; handler?: string }>();
+
+// Callback for request logging
+type RequestSourceCallback = (requestId: string, source: 'msw' | 'real', handler?: string) => void;
+let requestSourceCallback: RequestSourceCallback | null = null;
+
+export function setRequestSourceCallback(callback: RequestSourceCallback | null) {
+  requestSourceCallback = callback;
+}
+
+// Listen to MSW lifecycle events
+server.events.on('request:start', ({ request }) => {
+  // Initialize as real (will be updated if mocked)
+  const requestId = request.url;
+  requestSources.set(requestId, { source: 'real' });
+});
+
+server.events.on('request:match', ({ request }) => {
+  const requestId = request.url;
+  requestSources.set(requestId, { source: 'msw' });
+});
+
+server.events.on('request:unhandled', ({ request }) => {
+  const requestId = request.url;
+  const entry = requestSources.get(requestId);
+  if (entry) {
+    entry.source = 'real';
+    if (requestSourceCallback) {
+      requestSourceCallback(requestId, 'real');
+    }
+  }
+});
+
+server.events.on('response:mocked', ({ request }) => {
+  const requestId = request.url;
+  const entry = requestSources.get(requestId);
+  if (entry) {
+    entry.source = 'msw';
+    if (requestSourceCallback) {
+      requestSourceCallback(requestId, 'msw');
+    }
+  }
+});
+
+server.events.on('response:bypass', ({ request }) => {
+  const requestId = request.url;
+  const entry = requestSources.get(requestId);
+  if (entry) {
+    entry.source = 'real';
+    if (requestSourceCallback) {
+      requestSourceCallback(requestId, 'real');
+    }
+  }
+});
+
+export function getRequestSource(requestId: string): { source: 'msw' | 'real'; handler?: string } | null {
+  return requestSources.get(requestId) || null;
+}
+
 export function startMocking() {
-  worker.listen({
+  server.listen({
     onUnhandledRequest: 'bypass',
   });
   console.log('[MSW] Mocking enabled');
 }
 
-// Stop the worker
 export function stopMocking() {
-  worker.close();
+  server.close();
+  requestSources.clear();
   console.log('[MSW] Mocking disabled');
 }
 
 // Apply a scenario
 export function applyScenario(scenarioHandlers: RequestHandler[]) {
-  worker.use(...scenarioHandlers);
+  server.use(...scenarioHandlers);
   console.log('[MSW] Scenario applied');
 }
 
 // Reset handlers to default
 export function resetHandlers() {
-  worker.resetHandlers();
+  server.resetHandlers();
   console.log('[MSW] Handlers reset');
 }
+
+// Re-export resetMockTasks for convenience
+export { resetMockTasks };

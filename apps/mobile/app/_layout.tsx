@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 10, // 10 seconds
-      retry: (failureCount, error: any) => {
+      retry: (failureCount) => {
         // Don't retry when a scenario is active - we want to see the mocked failure
         return failureCount < 1;
       },
@@ -60,13 +60,13 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const { hasCompletedWalkthrough, isHydrated } = useLab();
+  const { hasCompletedWalkthrough, labReady } = useLab();
 
   useEffect(() => {
-    if (isHydrated && !hasCompletedWalkthrough) {
+    if (labReady && !hasCompletedWalkthrough) {
       router.push('/onboarding');
     }
-  }, [hasCompletedWalkthrough, isHydrated, router]);
+  }, [hasCompletedWalkthrough, labReady, router]);
 
   return (
     <Stack
