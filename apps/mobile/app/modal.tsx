@@ -107,6 +107,18 @@ export default function NewTaskModal() {
       <Stack.Screen
         options={{
           title: 'New task',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ paddingLeft: 16 }}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              disabled={createMutation.isPending}
+            >
+              <Text style={[styles.headerButton, { color: colors.tint }]}>Cancel</Text>
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity
               onPress={handleSave}
