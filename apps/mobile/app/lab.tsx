@@ -49,16 +49,6 @@ export default function LabModal() {
       <Stack.Screen
         options={{
           title: 'Lab',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={handleClose}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={[styles.headerButton, { color: colors.tint }]}>Close</Text>
-            </TouchableOpacity>
-          ),
         }}
       />
       <ScrollView
