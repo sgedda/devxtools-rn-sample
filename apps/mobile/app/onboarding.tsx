@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { spacing } from '@/constants/Colors';
@@ -67,13 +61,12 @@ export default function OnboardingScreen() {
         style={styles.skipButton}
         onPress={handleSkip}
         accessibilityRole="button"
-        accessibilityLabel="Skip walkthrough">
+        accessibilityLabel="Skip walkthrough"
+      >
         <Text style={[styles.skipText, { color: colors.muted }]}>Skip</Text>
       </TouchableOpacity>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={[styles.numberBadge, { backgroundColor: colors.tint }]}>
             <Text style={styles.numberText}>{currentCard + 1}</Text>
@@ -83,14 +76,12 @@ export default function OnboardingScreen() {
             {card.title}
           </Text>
 
-          <Text style={[styles.content, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
+          <Text style={[styles.contentText, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
             {card.content}
           </Text>
 
           <View style={[styles.highlightBox, { backgroundColor: colors.surface }]}>
-            <Text
-              style={[styles.highlight, { color: colors.tint }]}
-              maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.highlight, { color: colors.tint }]} maxFontSizeMultiplier={1.2}>
               💡 {card.highlight}
             </Text>
           </View>
@@ -103,8 +94,7 @@ export default function OnboardingScreen() {
               style={[
                 styles.dot,
                 {
-                  backgroundColor:
-                    index === currentCard ? colors.tint : colors.border,
+                  backgroundColor: index === currentCard ? colors.tint : colors.border,
                 },
               ]}
             />
@@ -115,7 +105,8 @@ export default function OnboardingScreen() {
           style={[styles.button, { backgroundColor: colors.tint }]}
           onPress={handleNext}
           accessibilityRole="button"
-          accessibilityLabel={currentCard < CARDS.length - 1 ? 'Next' : 'Get started'}>
+          accessibilityLabel={currentCard < CARDS.length - 1 ? 'Next' : 'Get started'}
+        >
           <Text style={styles.buttonText} maxFontSizeMultiplier={1.2}>
             {currentCard < CARDS.length - 1 ? 'Next' : 'Get Started'}
           </Text>

@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack, SplashScreen } from 'expo-router';
+import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { LabProvider } from '@/src/lab/LabContext';
+import { LabProvider, useLab } from '@/src/lab/LabContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
@@ -59,6 +59,14 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const { hasCompletedWalkthrough, isHydrated } = useLab();
+
+  useEffect(() => {
+    if (isHydrated && !hasCompletedWalkthrough) {
+      router.push('/onboarding');
+    }
+  }, [hasCompletedWalkthrough, isHydrated, router]);
 
   return (
     <Stack
@@ -67,7 +75,8 @@ function RootLayoutNav() {
         contentStyle: {
           backgroundColor: colorScheme === 'dark' ? '#0b0b0f' : '#fff',
         },
-      }}>
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="modal"
