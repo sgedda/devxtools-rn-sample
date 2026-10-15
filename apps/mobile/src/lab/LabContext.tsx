@@ -84,11 +84,13 @@ export function LabProvider({ children }: { children: ReactNode }) {
         source?: 'real' | 'msw';
         scenario?: string;
       }) => {
-        // Entry already has source and scenario stamped at send time
+        // Get the actual source from MSW lifecycle events if available
+        const mswSource = requestSourcesRef.current.get(entry.id);
         const logEntry: RequestLogEntry = {
           ...entry,
-          source: entry.source || 'real',
+          source: mswSource?.source || entry.source || 'real',
           scenario: entry.scenario,
+          handler: mswSource?.handler,
         };
         setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
       }

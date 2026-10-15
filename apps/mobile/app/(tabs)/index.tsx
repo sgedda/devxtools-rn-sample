@@ -197,6 +197,14 @@ export default function TasksScreen() {
         onSwipeableOpen={() => handleDelete(task)}
         overshootRight={false}
         enabled={!isDeleting}
+        accessible={true}
+        accessibilityLabel={`Task: ${task.title}`}
+        accessibilityActions={[{ name: 'delete', label: 'Delete task' }]}
+        onAccessibilityAction={event => {
+          if (event.nativeEvent.actionName === 'delete') {
+            handleDelete(task);
+          }
+        }}
       >
         <View
           style={[

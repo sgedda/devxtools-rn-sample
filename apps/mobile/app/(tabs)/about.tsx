@@ -34,20 +34,18 @@ export default function AboutScreen() {
           About this app
         </Text>
         <Text style={[styles.text, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
-          This is a sample task management app built for the devxtools.dev tutorial series. It
-          demonstrates modern React Native development with Expo, showcasing API integration, state
-          management, accessibility features, and polished UX.
+          A teaching demo for mobile testing tools. This app demonstrates real vs mocked API
+          requests, error scenarios, and offline handling using MSW (Mock Service Worker).
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
-          Features
+          Testing Tools
         </Text>
         <Text style={[styles.text, { color: colors.text }]} maxFontSizeMultiplier={1.2}>
-          • Create, complete, and delete tasks{'\n'}• Swipe to delete with undo{'\n'}• Pull to
-          refresh{'\n'}• Offline detection{'\n'}• Haptic feedback{'\n'}• Optimistic updates{'\n'}•
-          Full accessibility support
+          • MSW for API mocking{'\n'}• React Query for data fetching{'\n'}• Jest and React Native
+          Testing Library{'\n'}• Comprehensive error scenarios
         </Text>
       </View>
 

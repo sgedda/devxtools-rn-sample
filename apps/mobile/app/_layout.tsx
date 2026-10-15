@@ -5,7 +5,6 @@ import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Platform, TouchableOpacity, Text } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { LabProvider, useLab } from '@/src/lab/LabContext';
@@ -82,17 +81,7 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'New Task',
-          ...(Platform.OS === 'web' && {
-            headerLeft: (props: any) => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ paddingLeft: 16 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Text style={{ fontSize: 17, color: props.tintColor || '#007AFF' }}>Cancel</Text>
-              </TouchableOpacity>
-            ),
-          }),
+          headerLeftContainerStyle: { paddingLeft: 16 },
         }}
       />
       <Stack.Screen
@@ -102,17 +91,7 @@ function RootLayoutNav() {
           headerShown: true,
           statusBarStyle: 'auto',
           title: 'Lab',
-          ...(Platform.OS === 'web' && {
-            headerLeft: (props: any) => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ paddingLeft: 16 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Text style={{ fontSize: 17, color: props.tintColor || '#007AFF' }}>Close</Text>
-              </TouchableOpacity>
-            ),
-          }),
+          headerLeftContainerStyle: { paddingLeft: 16 },
         }}
       />
       <Stack.Screen

@@ -18,17 +18,17 @@ export function setRequestSourceCallback(callback: RequestSourceCallback | null)
 // Listen to MSW lifecycle events
 server.events.on('request:start', ({ request }) => {
   // Initialize as real (will be updated if mocked)
-  const requestId = request.url;
+  const requestId = request.id;
   requestSources.set(requestId, { source: 'real' });
 });
 
 server.events.on('request:match', ({ request }) => {
-  const requestId = request.url;
+  const requestId = request.id;
   requestSources.set(requestId, { source: 'msw' });
 });
 
 server.events.on('request:unhandled', ({ request }) => {
-  const requestId = request.url;
+  const requestId = request.id;
   const entry = requestSources.get(requestId);
   if (entry) {
     entry.source = 'real';
@@ -39,7 +39,7 @@ server.events.on('request:unhandled', ({ request }) => {
 });
 
 server.events.on('response:mocked', ({ request }) => {
-  const requestId = request.url;
+  const requestId = request.id;
   const entry = requestSources.get(requestId);
   if (entry) {
     entry.source = 'msw';
@@ -50,7 +50,7 @@ server.events.on('response:mocked', ({ request }) => {
 });
 
 server.events.on('response:bypass', ({ request }) => {
-  const requestId = request.url;
+  const requestId = request.id;
   const entry = requestSources.get(requestId);
   if (entry) {
     entry.source = 'real';

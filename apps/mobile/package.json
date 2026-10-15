@@ -49,7 +49,7 @@
     "web": "expo start --web",
     "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit --project tsconfig.typecheck.json",
-    "lint": "eslint ."
+    "lint": "eslint . --max-warnings=0"
   },
   "private": true
 }
