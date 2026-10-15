@@ -16,6 +16,7 @@ interface LabContextType {
   clearLog: () => void;
   hasCompletedWalkthrough: boolean;
   completeWalkthrough: () => void;
+  isHydrated: boolean;
 }
 
 export interface RequestLogEntry {
@@ -42,6 +43,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
   const [scenario, setScenarioState] = useState<ScenarioName | null>(null);
   const [requestLog, setRequestLog] = useState<RequestLogEntry[]>([]);
   const [hasCompletedWalkthrough, setHasCompletedWalkthrough] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -72,6 +74,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Failed to load lab state:', error);
+      } finally {
+        setIsHydrated(true);
       }
     }
 
@@ -148,6 +152,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
         clearLog,
         hasCompletedWalkthrough,
         completeWalkthrough,
+        isHydrated,
       }}
     >
       {children}

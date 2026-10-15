@@ -57,13 +57,13 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const { hasCompletedWalkthrough } = useLab();
+  const { hasCompletedWalkthrough, isHydrated } = useLab();
 
   useEffect(() => {
-    if (!hasCompletedWalkthrough) {
+    if (isHydrated && !hasCompletedWalkthrough) {
       router.push('/onboarding');
     }
-  }, [hasCompletedWalkthrough, router]);
+  }, [hasCompletedWalkthrough, isHydrated, router]);
 
   return (
     <Stack
