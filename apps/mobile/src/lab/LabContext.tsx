@@ -102,8 +102,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
             {
               ...entry,
               source,
+              scenario: handler ?? undefined,
               handler,
-              scenario: scenarioRef.current ?? undefined,
             },
             ...prev,
           ].slice(0, 50);
@@ -245,6 +245,8 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
   // Atomic scenario selection that switches to MSW if needed
   const selectScenario = async (newScenario: ScenarioName) => {
+    const oldScenario = scenarioRef.current;
+
     if (dataSourceRef.current !== 'msw') {
       // Switch to MSW first
       setDataSourceState('msw');
@@ -262,6 +264,24 @@ export function LabProvider({ children }: { children: ReactNode }) {
     const scenarioObj = scenarios[newScenario];
     applyScenario(scenarioObj.handlers);
     setCurrentScenario(scenarioObj.name);
+    
+    // Reset scenario state (like flaky counter)
+    const { resetScenarioState } = await import('../mocks/scenarios');
+    resetScenarioState();
+
+    // Add divider to log when switching scenarios
+    if (oldScenario !== newScenario) {
+      const dividerEntry: RequestLogEntry = {
+        id: `divider-${Date.now()}`,
+        timestamp: Date.now(),
+        method: '',
+        url: '',
+        source: 'real',
+        divider: true,
+        dividerText: `Switched to ${scenarioLabels[newScenario]}`,
+      };
+      setRequestLog(prev => [dividerEntry, ...prev].slice(0, 50));
+    }
 
     // Reset queries after log is cleared
     queryClient.resetQueries({ queryKey: ['tasks'] });

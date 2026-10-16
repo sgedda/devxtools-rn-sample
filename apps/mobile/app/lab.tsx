@@ -21,7 +21,7 @@ export default function LabModal() {
     if (params.scenario && params.scenario in scenarios) {
       selectScenario(params.scenario as ScenarioName);
     }
-  }, [params.scenario, selectScenario]);
+  }, [params.scenario]);
 
   const handleDataSourceChange = (source: 'real' | 'msw') => {
     setDataSource(source);

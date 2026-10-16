@@ -195,9 +195,14 @@ export default function TasksScreen() {
       <View
         accessible={true}
         accessibilityLabel={`Task: ${task.title}`}
-        accessibilityActions={[{ name: 'delete', label: 'Delete task' }]}
+        accessibilityActions={[
+          { name: 'activate', label: 'Toggle task' },
+          { name: 'delete', label: 'Delete task' },
+        ]}
         onAccessibilityAction={event => {
-          if (event.nativeEvent.actionName === 'delete') {
+          if (event.nativeEvent.actionName === 'activate') {
+            handleToggle(task);
+          } else if (event.nativeEvent.actionName === 'delete') {
             handleDelete(task);
           }
         }}
