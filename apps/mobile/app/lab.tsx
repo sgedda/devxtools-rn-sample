@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -15,10 +15,16 @@ export default function LabModal() {
   const params = useLocalSearchParams<{ scenario?: string }>();
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();
+  const appliedScenarioRef = useRef<string | null>(null);
 
-  // Handle deep link scenario parameter
+  // Handle deep link scenario parameter (only once per unique scenario value)
   useEffect(() => {
-    if (params.scenario && params.scenario in scenarios) {
+    if (
+      params.scenario &&
+      params.scenario in scenarios &&
+      params.scenario !== appliedScenarioRef.current
+    ) {
+      appliedScenarioRef.current = params.scenario;
       selectScenario(params.scenario as ScenarioName);
     }
   }, [params.scenario, selectScenario]);
@@ -140,6 +146,7 @@ export default function LabModal() {
                     style={styles.showCodeButton}
                     accessibilityRole="button"
                     accessibilityLabel={`Show code for ${scenarioLabels[scenarioKey]}`}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Text style={[styles.showCodeText, { color: colors.tint }]}>Show code</Text>
                   </TouchableOpacity>
@@ -355,6 +362,8 @@ const styles = StyleSheet.create({
   },
   showCodeButton: {
     marginTop: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
   showCodeText: {
     fontSize: 14,

@@ -17,7 +17,14 @@ const tasks: Task[] = [
 const app = new Hono();
 
 app.use('*', logger());
-app.use('*', cors());
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowHeaders: ['Content-Type', 'x-devx-req-id', 'x-devx-scenario'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
 
 // Health check endpoint
 app.get('/health', c => {

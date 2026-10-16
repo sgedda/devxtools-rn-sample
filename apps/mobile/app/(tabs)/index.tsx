@@ -46,11 +46,9 @@ export default function TasksScreen() {
     return () => unsubscribe();
   }, []);
 
-  // Invalidate tasks query when data source or scenario changes
+  // Cancel in-flight queries when data source or scenario changes
   React.useEffect(() => {
-    // Cancel any in-flight queries to prevent stale log entries
     queryClient.cancelQueries({ queryKey: ['tasks'] });
-    queryClient.invalidateQueries({ queryKey: ['tasks'] });
   }, [dataSource, scenario, queryClient]);
 
   const {
@@ -191,16 +189,39 @@ export default function TasksScreen() {
   const renderTask = ({ item: task }: { item: Task }) => {
     const isDeleting = pendingDeletes.has(task.id);
 
+    // Web-only props type
+    const webProps =
+      Platform.OS === 'web'
+        ? {
+            'aria-checked': task.completed,
+            onClick: () => handleToggle(task),
+            onKeyDown: (event: KeyboardEvent) => {
+              if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                handleToggle(task);
+              }
+            },
+            tabIndex: 0 as const,
+          }
+        : {};
+
     return (
       <View
-        accessible={true}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: task.completed }}
         accessibilityLabel={`Task: ${task.title}`}
-        accessibilityActions={[{ name: 'delete', label: 'Delete task' }]}
-        onAccessibilityAction={event => {
-          if (event.nativeEvent.actionName === 'delete') {
+        accessibilityActions={[
+          { name: 'activate', label: 'Toggle completion' },
+          { name: 'delete', label: 'Delete task' },
+        ]}
+        onAccessibilityAction={(event: { nativeEvent: { actionName: string } }) => {
+          if (event.nativeEvent.actionName === 'activate') {
+            handleToggle(task);
+          } else if (event.nativeEvent.actionName === 'delete') {
             handleDelete(task);
           }
         }}
+        {...webProps}
       >
         <Swipeable
           renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
@@ -218,9 +239,9 @@ export default function TasksScreen() {
             <TouchableOpacity
               style={styles.checkbox}
               onPress={() => handleToggle(task)}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: task.completed }}
-              accessibilityLabel={task.title}
+              accessibilityRole="none"
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no-hide-descendants"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <View
