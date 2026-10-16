@@ -49,6 +49,7 @@ export default function TasksScreen() {
   // Cancel in-flight queries when data source or scenario changes
   React.useEffect(() => {
     queryClient.cancelQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
   }, [dataSource, scenario, queryClient]);
 
   const {
