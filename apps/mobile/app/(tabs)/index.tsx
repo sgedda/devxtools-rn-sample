@@ -192,69 +192,73 @@ export default function TasksScreen() {
     const isDeleting = pendingDeletes.has(task.id);
 
     return (
-      <View
+      <Swipeable
+        renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
+        onSwipeableOpen={() => handleDelete(task)}
+        overshootRight={false}
+        enabled={!isDeleting}
         accessible={true}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: task.completed }}
         accessibilityLabel={`Task: ${task.title}`}
-        accessibilityActions={[{ name: 'delete', label: 'Delete task' }]}
+        accessibilityActions={[
+          { name: 'activate', label: 'Toggle completion' },
+          { name: 'delete', label: 'Delete task' },
+        ]}
         onAccessibilityAction={event => {
-          if (event.nativeEvent.actionName === 'delete') {
+          if (event.nativeEvent.actionName === 'activate') {
+            handleToggle(task);
+          } else if (event.nativeEvent.actionName === 'delete') {
             handleDelete(task);
           }
         }}
       >
-        <Swipeable
-          renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
-          onSwipeableOpen={() => handleDelete(task)}
-          overshootRight={false}
-          enabled={!isDeleting}
+        <View
+          style={[
+            styles.taskItem,
+            { backgroundColor: colors.card, borderBottomColor: colors.border },
+            isDeleting && styles.taskDeleting,
+          ]}
         >
-          <View
-            style={[
-              styles.taskItem,
-              { backgroundColor: colors.card, borderBottomColor: colors.border },
-              isDeleting && styles.taskDeleting,
-            ]}
+          <TouchableOpacity
+            style={styles.checkbox}
+            onPress={() => handleToggle(task)}
+            accessibilityRole="none"
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no-hide-descendants"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => handleToggle(task)}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: task.completed }}
-              accessibilityLabel={task.title}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            <View
+              style={[
+                styles.checkboxCircle,
+                {
+                  borderColor: task.completed ? colors.tint : colors.border,
+                  backgroundColor: task.completed ? colors.tint : 'transparent',
+                },
+              ]}
             >
-              <View
-                style={[
-                  styles.checkboxCircle,
-                  {
-                    borderColor: task.completed ? colors.tint : colors.border,
-                    backgroundColor: task.completed ? colors.tint : 'transparent',
-                  },
-                ]}
-              >
-                {task.completed && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.taskContent}>
-              <Text
-                style={[
-                  styles.taskTitle,
-                  { color: colors.text },
-                  task.completed && styles.taskTitleCompleted,
-                ]}
-                numberOfLines={2}
-                maxFontSizeMultiplier={1.3}
-              >
-                {task.title}
-              </Text>
-              <Text style={[styles.taskDate, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
-                {getRelativeTime(task.createdAt)}
-              </Text>
+              {task.completed && <Text style={styles.checkmark}>✓</Text>}
             </View>
+          </TouchableOpacity>
+
+          <View style={styles.taskContent}>
+            <Text
+              style={[
+                styles.taskTitle,
+                { color: colors.text },
+                task.completed && styles.taskTitleCompleted,
+              ]}
+              numberOfLines={2}
+              maxFontSizeMultiplier={1.3}
+            >
+              {task.title}
+            </Text>
+            <Text style={[styles.taskDate, { color: colors.muted }]} maxFontSizeMultiplier={1.2}>
+              {getRelativeTime(task.createdAt)}
+            </Text>
           </View>
-        </Swipeable>
-      </View>
+        </View>
+      </Swipeable>
     );
   };
 

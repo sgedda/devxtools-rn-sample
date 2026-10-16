@@ -75,12 +75,20 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   const startTime = Date.now();
   const method = options.method || 'GET';
 
+  // Stamp current data source and scenario at send time
+  const contextData = dataSourceGetter?.() || { source: 'real', scenario: null };
+
   // Generate unique request ID and add as header
   const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-  const headers = {
-    ...options.headers,
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
     'x-devx-req-id': requestId,
   };
+  
+  // Add scenario header if present
+  if (contextData.scenario) {
+    headers['x-devx-scenario'] = contextData.scenario;
+  }
 
   try {
     const response = await fetch(url, {

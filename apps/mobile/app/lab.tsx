@@ -140,6 +140,7 @@ export default function LabModal() {
                     style={styles.showCodeButton}
                     accessibilityRole="button"
                     accessibilityLabel={`Show code for ${scenarioLabels[scenarioKey]}`}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <Text style={[styles.showCodeText, { color: colors.tint }]}>Show code</Text>
                   </TouchableOpacity>

@@ -8,6 +8,9 @@ let currentScenario: string | null = null;
 let requestSourceCallback:
   ((requestId: string, source: 'msw' | 'real', handler?: string) => void) | null = null;
 
+// Store unsubscribe functions for cleanup
+let unsubscribeFunctions: Array<() => void> = [];
+
 export const server = setupServer(...handlers);
 
 export function setRequestSourceCallback(
@@ -21,8 +24,12 @@ function getCurrentScenario() {
 }
 
 export async function startMocking() {
+  // Remove any existing listeners before adding new ones
+  unsubscribeFunctions.forEach(unsubscribe => unsubscribe());
+  unsubscribeFunctions = [];
+
   // Wire up lifecycle events for request source tracking
-  server.events.on('request:start', ({ request }: { request: Request; requestId: string }) => {
+  const unsubRequestStart = server.events.on('request:start', ({ request }: { request: Request; requestId: string }) => {
     // Read unique request ID from header
     const requestId = request.headers.get('x-devx-req-id');
     if (requestId) {
@@ -32,8 +39,9 @@ export async function startMocking() {
       });
     }
   });
+  unsubscribeFunctions.push(unsubRequestStart);
 
-  server.events.on('response:mocked', ({ request }: { request: Request }) => {
+  const unsubResponseMocked = server.events.on('response:mocked', ({ request }: { request: Request }) => {
     const requestId = request.headers.get('x-devx-req-id');
     if (requestId) {
       const tracked = requestMap.get(requestId);
@@ -43,8 +51,9 @@ export async function startMocking() {
       requestMap.delete(requestId);
     }
   });
+  unsubscribeFunctions.push(unsubResponseMocked);
 
-  server.events.on('request:unhandled', ({ request }: { request: Request }) => {
+  const unsubRequestUnhandled = server.events.on('request:unhandled', ({ request }: { request: Request }) => {
     const requestId = request.headers.get('x-devx-req-id');
     if (requestId) {
       const tracked = requestMap.get(requestId);
@@ -54,8 +63,9 @@ export async function startMocking() {
       requestMap.delete(requestId);
     }
   });
+  unsubscribeFunctions.push(unsubRequestUnhandled);
 
-  server.events.on('response:bypass', ({ request }: { request: Request }) => {
+  const unsubResponseBypass = server.events.on('response:bypass', ({ request }: { request: Request }) => {
     const requestId = request.headers.get('x-devx-req-id');
     if (requestId) {
       const tracked = requestMap.get(requestId);
@@ -65,6 +75,7 @@ export async function startMocking() {
       requestMap.delete(requestId);
     }
   });
+  unsubscribeFunctions.push(unsubResponseBypass);
 
   server.listen({
     onUnhandledRequest: 'bypass',
@@ -74,6 +85,10 @@ export async function startMocking() {
 export function stopMocking() {
   server.close();
   requestMap.clear();
+  
+  // Remove all event listeners
+  unsubscribeFunctions.forEach(unsubscribe => unsubscribe());
+  unsubscribeFunctions = [];
 }
 
 export function applyScenario(scenarioHandlers: RequestHandler[]) {

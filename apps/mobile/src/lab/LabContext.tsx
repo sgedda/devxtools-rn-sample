@@ -245,6 +245,9 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
   // Atomic scenario selection that switches to MSW if needed
   const selectScenario = async (newScenario: ScenarioName) => {
+    // Cancel in-flight queries before scenario switch
+    await queryClient.cancelQueries({ queryKey: ['tasks'] });
+
     if (dataSourceRef.current !== 'msw') {
       // Switch to MSW first
       setDataSourceState('msw');
@@ -263,7 +266,19 @@ export function LabProvider({ children }: { children: ReactNode }) {
     applyScenario(scenarioObj.handlers);
     setCurrentScenario(scenarioObj.name);
 
-    // Reset queries after log is cleared
+    // Add divider to log when switching scenarios
+    const dividerEntry: RequestLogEntry = {
+      id: `divider-${Date.now()}`,
+      timestamp: Date.now(),
+      method: '',
+      url: '',
+      source: 'msw',
+      divider: true,
+      dividerText: `Switched to ${scenarioLabels[newScenario]}`,
+    };
+    setRequestLog(prev => [dividerEntry, ...prev].slice(0, 50));
+
+    // Reset queries after divider is added
     queryClient.resetQueries({ queryKey: ['tasks'] });
   };
 
