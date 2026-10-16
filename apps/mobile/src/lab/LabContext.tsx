@@ -89,7 +89,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
         const sourceData = requestSourcesRef.current.get(entry.id);
         const source = sourceData?.source || 'real';
         const handler = sourceData?.handler;
-        
+
         // Delete the entry after consuming it to avoid reuse
         requestSourcesRef.current.delete(entry.id);
 

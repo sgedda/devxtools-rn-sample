@@ -74,7 +74,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 
   const startTime = Date.now();
   const method = options.method || 'GET';
-  
+
   // Generate unique request ID and add as header
   const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   const headers = {
