@@ -28,7 +28,7 @@ describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
   it('renders Tasks screen with empty scenario using shared MSW handlers', async () => {
     // TEACHING MOMENT: This uses the EXACT SAME handler from src/mocks/scenarios.ts
     // that the Lab modal uses. Import it directly - no duplication.
-    server.use(...scenarios.empty);
+    server.use(...scenarios.empty.handlers);
 
     render(
       <Wrapper>
@@ -61,7 +61,7 @@ describe('TasksScreen with MSW - Component Test (CORE TEACHING DEMO)', () => {
   it('renders Tasks screen with 500 error using shared MSW handlers', async () => {
     // TEACHING MOMENT: This uses the EXACT SAME handler from src/mocks/scenarios.ts
     // that the Lab modal uses for the "Server error 500" scenario chip.
-    server.use(...scenarios.error500);
+    server.use(...scenarios.error500.handlers);
 
     render(
       <Wrapper>

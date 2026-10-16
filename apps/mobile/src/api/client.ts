@@ -26,22 +26,12 @@ type RequestLogCallback = (entry: {
   url: string;
   status?: number;
   duration?: number;
-  source?: 'real' | 'msw';
-  scenario?: string;
 }) => void;
 
 let requestLogCallback: RequestLogCallback | null = null;
 
 export function setRequestLogCallback(callback: RequestLogCallback | null) {
   requestLogCallback = callback;
-}
-
-// Get current data source and scenario for stamping requests
-type DataSourceGetter = () => { source: 'real' | 'msw' | 'mockifyer'; scenario: string | null };
-let dataSourceGetter: DataSourceGetter | null = null;
-
-export function setDataSourceGetter(getter: DataSourceGetter | null) {
-  dataSourceGetter = getter;
 }
 
 function getApiUrl(): string {
@@ -82,24 +72,25 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-  // Log the request
-  const requestId = Math.random().toString(36).substring(7);
   const startTime = Date.now();
   const method = options.method || 'GET';
 
-  // Log the request START with current context
-  const contextData = dataSourceGetter?.() || { source: 'real', scenario: null };
-  const requestSource = contextData.source === 'mockifyer' ? 'real' : contextData.source;
-  const requestScenario = contextData.scenario;
+  // Generate unique request ID and add as header
+  const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  const headers = {
+    ...options.headers,
+    'x-devx-req-id': requestId,
+  };
 
   try {
     const response = await fetch(url, {
       ...options,
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
-    // Log the response with the captured context from request start
+    // Log the response - use requestId as key for MSW event tracking
     const duration = Date.now() - startTime;
     if (requestLogCallback) {
       requestLogCallback({
@@ -109,8 +100,6 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
         url,
         status: response.status,
         duration,
-        source: requestSource,
-        scenario: requestScenario || undefined,
       });
     }
 

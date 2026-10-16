@@ -7,10 +7,11 @@ import {
   applyScenario,
   resetHandlers,
   setRequestSourceCallback,
+  setCurrentScenario,
   resetMockTasks,
 } from '../mocks/native';
-import { scenarios, type ScenarioName } from '../mocks/scenarios';
-import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
+import { scenarios, type ScenarioName, scenarioLabels } from '../mocks/scenarios';
+import { setRequestLogCallback } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
 
@@ -38,6 +39,8 @@ export interface RequestLogEntry {
   source: 'real' | 'msw' | 'mockifyer';
   scenario?: string;
   handler?: string;
+  divider?: boolean;
+  dividerText?: string;
 }
 
 const LabContext = createContext<LabContextType | undefined>(undefined);
@@ -81,38 +84,45 @@ export function LabProvider({ children }: { children: ReactNode }) {
         url: string;
         status?: number;
         duration?: number;
-        source?: 'real' | 'msw';
-        scenario?: string;
       }) => {
-        // Entry already has source and scenario stamped at send time
-        const logEntry: RequestLogEntry = {
-          ...entry,
-          source: entry.source || 'real',
-          scenario: entry.scenario,
-        };
-        setRequestLog(prev => [logEntry, ...prev].slice(0, 50));
+        // Look up source from requestSourcesRef - it was stamped by MSW events
+        const sourceData = requestSourcesRef.current.get(entry.id);
+        // If no MSW event fired, fall back to the current data source setting
+        // When MSW is active, unlabeled requests are still MSW (may be bypassed/unhandled)
+        // When Real is active, unlabeled requests are Real
+        const fallbackSource = dataSourceRef.current === 'msw' ? 'msw' : 'real';
+        const source = sourceData?.source || fallbackSource;
+        const handler = sourceData?.handler;
+
+        // Delete the entry after consuming it to avoid reuse
+        requestSourcesRef.current.delete(entry.id);
+
+        setRequestLog(prev => {
+          const newLog = [
+            {
+              ...entry,
+              source,
+              handler,
+              scenario: scenarioRef.current ?? undefined,
+            },
+            ...prev,
+          ].slice(0, 50);
+          return newLog;
+        });
       }
     );
 
-    // Callback from MSW lifecycle events
+    // Callback from native.ts for MSW worker lifecycle events
     setRequestSourceCallback((requestId: string, source: 'msw' | 'real', handler?: string) => {
+      // Stamp the source at MSW event time
       requestSourcesRef.current.set(requestId, { source, handler });
     });
 
     return () => {
-      setRequestLogCallback(null);
+      setRequestLogCallback(() => {});
       setRequestSourceCallback(null);
-      setDataSourceGetter(null);
     };
   }, []);
-
-  // Provide data source getter for request stamping
-  useEffect(() => {
-    setDataSourceGetter(() => ({
-      source: dataSourceRef.current,
-      scenario: scenarioRef.current,
-    }));
-  }, [dataSource, scenario]);
 
   // Load persisted state on mount BEFORE first query
   useEffect(() => {
@@ -134,8 +144,11 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
         if (savedScenario && savedSource === 'msw') {
           setScenarioState(savedScenario as ScenarioName);
+          scenarioRef.current = savedScenario as ScenarioName;
           // Apply the scenario BEFORE rendering
-          applyScenario(scenarios[savedScenario as ScenarioName]);
+          const scenarioObj = scenarios[savedScenario as ScenarioName];
+          applyScenario(scenarioObj.handlers);
+          setCurrentScenario(scenarioObj.name);
         }
 
         if (walkthroughComplete === 'true') {
@@ -153,9 +166,7 @@ export function LabProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setDataSource = async (source: DataSource) => {
-    // Clear log BEFORE the data source change triggers refetch
-    setRequestLog([]);
-    requestSourcesRef.current.clear();
+    const oldSource = dataSourceRef.current;
 
     setDataSourceState(source);
     dataSourceRef.current = source;
@@ -166,10 +177,26 @@ export function LabProvider({ children }: { children: ReactNode }) {
       if (scenario) {
         resetHandlers();
         resetMockTasks();
-        applyScenario(scenarios[scenario]);
+        const scenarioObj = scenarios[scenario];
+        applyScenario(scenarioObj.handlers);
+        setCurrentScenario(scenarioObj.name);
       }
     } else {
       stopMocking();
+    }
+
+    // Add divider when switching data sources
+    if (oldSource !== source) {
+      const dividerEntry: RequestLogEntry = {
+        id: `divider-${Date.now()}`,
+        timestamp: Date.now(),
+        method: '',
+        url: '',
+        source: 'real',
+        divider: true,
+        dividerText: `Switched to ${source === 'msw' ? 'MSW' : 'Real'}`,
+      };
+      setRequestLog(prev => [dividerEntry, ...prev].slice(0, 50));
     }
 
     // Reset queries after log is cleared
@@ -177,39 +204,47 @@ export function LabProvider({ children }: { children: ReactNode }) {
   };
 
   const setScenario = async (newScenario: ScenarioName | null) => {
-    // Clear log BEFORE the scenario change triggers refetch
-    setRequestLog([]);
-    requestSourcesRef.current.clear();
+    const oldScenario = scenarioRef.current;
 
     setScenarioState(newScenario);
+    scenarioRef.current = newScenario;
+    await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario || '');
 
-    if (newScenario) {
-      await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
+    if (newScenario && scenarios[newScenario]) {
+      applyScenario(scenarios[newScenario].handlers);
+      setCurrentScenario(newScenario);
+      // Reset scenario state (like flaky counter)
+      const { resetScenarioState } = await import('../mocks/scenarios');
+      resetScenarioState();
     } else {
-      await AsyncStorage.removeItem(STORAGE_KEYS.SCENARIO);
+      resetHandlers();
+      setCurrentScenario(null);
     }
 
-    if (dataSourceRef.current === 'msw') {
-      if (newScenario) {
-        resetHandlers();
-        resetMockTasks();
-        applyScenario(scenarios[newScenario]);
-      } else {
-        resetHandlers();
-        resetMockTasks();
-      }
-
-      // Reset queries after log is cleared
-      queryClient.resetQueries({ queryKey: ['tasks'] });
+    // Add divider to log when switching scenarios
+    if (oldScenario !== newScenario) {
+      const dividerEntry: RequestLogEntry = {
+        id: `divider-${Date.now()}`,
+        timestamp: Date.now(),
+        method: '',
+        url: '',
+        source: 'real',
+        divider: true,
+        dividerText: newScenario
+          ? `Switched to ${scenarioLabels[newScenario]}`
+          : 'Cleared scenario',
+      };
+      setRequestLog(prev => [dividerEntry, ...prev].slice(0, 50));
     }
+
+    // Reset query data
+    await queryClient.cancelQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    resetMockTasks();
   };
 
   // Atomic scenario selection that switches to MSW if needed
   const selectScenario = async (newScenario: ScenarioName) => {
-    // Clear log BEFORE the scenario change
-    setRequestLog([]);
-    requestSourcesRef.current.clear();
-
     if (dataSourceRef.current !== 'msw') {
       // Switch to MSW first
       setDataSourceState('msw');
@@ -220,10 +255,13 @@ export function LabProvider({ children }: { children: ReactNode }) {
 
     // Now apply the scenario
     setScenarioState(newScenario);
+    scenarioRef.current = newScenario;
     await AsyncStorage.setItem(STORAGE_KEYS.SCENARIO, newScenario);
     resetHandlers();
     resetMockTasks();
-    applyScenario(scenarios[newScenario]);
+    const scenarioObj = scenarios[newScenario];
+    applyScenario(scenarioObj.handlers);
+    setCurrentScenario(scenarioObj.name);
 
     // Reset queries after log is cleared
     queryClient.resetQueries({ queryKey: ['tasks'] });
