@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -15,10 +15,12 @@ export default function LabModal() {
   const params = useLocalSearchParams<{ scenario?: string }>();
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<ScenarioName | undefined>();
+  const appliedScenarioRef = useRef<string | null>(null);
 
-  // Handle deep link scenario parameter
+  // Handle deep link scenario parameter (only once per unique scenario value)
   useEffect(() => {
-    if (params.scenario && params.scenario in scenarios) {
+    if (params.scenario && params.scenario in scenarios && params.scenario !== appliedScenarioRef.current) {
+      appliedScenarioRef.current = params.scenario;
       selectScenario(params.scenario as ScenarioName);
     }
   }, [params.scenario, selectScenario]);

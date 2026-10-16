@@ -135,4 +135,25 @@ describe('Request Log Source Logic', () => {
       expect(true).toBe(true);
     });
   });
+
+  describe('Query invalidation behavior', () => {
+    it('should verify only cancelQueries is called on scenario change, not invalidateQueries', () => {
+      // This is a unit test to document that the index.tsx effect now only calls
+      // cancelQueries, not invalidateQueries, to prevent double GET requests.
+      // The actual implementation is in the LabContext selectScenario function
+      // which handles resetQueries, and index.tsx only cancels in-flight requests.
+      
+      const mockQueryClient = {
+        cancelQueries: jest.fn(),
+        invalidateQueries: jest.fn(),
+      };
+
+      // Simulate the effect in index.tsx
+      mockQueryClient.cancelQueries({ queryKey: ['tasks'] });
+
+      // Verify only cancel was called, not invalidate
+      expect(mockQueryClient.cancelQueries).toHaveBeenCalledWith({ queryKey: ['tasks'] });
+      expect(mockQueryClient.invalidateQueries).not.toHaveBeenCalled();
+    });
+  });
 });

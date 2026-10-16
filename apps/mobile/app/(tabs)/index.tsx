@@ -46,11 +46,9 @@ export default function TasksScreen() {
     return () => unsubscribe();
   }, []);
 
-  // Invalidate tasks query when data source or scenario changes
+  // Cancel in-flight queries when data source or scenario changes
   React.useEffect(() => {
-    // Cancel any in-flight queries to prevent stale log entries
     queryClient.cancelQueries({ queryKey: ['tasks'] });
-    queryClient.invalidateQueries({ queryKey: ['tasks'] });
   }, [dataSource, scenario, queryClient]);
 
   const {
@@ -191,9 +189,22 @@ export default function TasksScreen() {
   const renderTask = ({ item: task }: { item: Task }) => {
     const isDeleting = pendingDeletes.has(task.id);
 
+    // Web-only props type
+    const webProps = Platform.OS === 'web' ? {
+      // @ts-expect-error - web-only props not in React Native types
+      'aria-checked': task.completed,
+      onClick: () => handleToggle(task),
+      onKeyDown: (event: KeyboardEvent) => {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          handleToggle(task);
+        }
+      },
+      tabIndex: 0 as const,
+    } : {};
+
     return (
       <View
-        accessible={true}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: task.completed }}
         accessibilityLabel={`Task: ${task.title}`}
@@ -208,6 +219,7 @@ export default function TasksScreen() {
             handleDelete(task);
           }
         }}
+        {...webProps}
       >
         <Swipeable
           renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, task)}
