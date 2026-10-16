@@ -356,6 +356,8 @@ const styles = StyleSheet.create({
   },
   showCodeButton: {
     marginTop: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
   showCodeText: {
     fontSize: 14,
