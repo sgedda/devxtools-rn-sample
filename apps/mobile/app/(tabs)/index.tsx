@@ -191,7 +191,6 @@ export default function TasksScreen() {
 
     // Web-only props type
     const webProps = Platform.OS === 'web' ? {
-      // @ts-expect-error - web-only props not in React Native types
       'aria-checked': task.completed,
       onClick: () => handleToggle(task),
       onKeyDown: (event: KeyboardEvent) => {

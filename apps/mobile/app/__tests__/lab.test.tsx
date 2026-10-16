@@ -22,7 +22,7 @@ function createWrapper() {
 
 describe('Lab deep link and scenario handling', () => {
   it('should ensure selectScenario is stable across renders (useCallback)', async () => {
-    const { result, rerender } = renderHook(() => useLab(), {
+    const { result, rerender: rerenderHook } = renderHook(() => useLab(), {
       wrapper: createWrapper(),
     });
 
@@ -34,7 +34,7 @@ describe('Lab deep link and scenario handling', () => {
     const firstSelectScenario = result.current.selectScenario;
 
     // Trigger a re-render
-    rerender();
+    rerenderHook(undefined);
 
     const secondSelectScenario = result.current.selectScenario;
 
@@ -43,7 +43,7 @@ describe('Lab deep link and scenario handling', () => {
   });
 
   it('should ensure all context functions are stable (useCallback)', async () => {
-    const { result, rerender } = renderHook(() => useLab(), {
+    const { result, rerender: rerenderHook } = renderHook(() => useLab(), {
       wrapper: createWrapper(),
     });
 
@@ -62,7 +62,7 @@ describe('Lab deep link and scenario handling', () => {
     };
 
     // Trigger a re-render
-    rerender();
+    rerenderHook(undefined);
 
     const secondFunctions = {
       setDataSource: result.current.setDataSource,
