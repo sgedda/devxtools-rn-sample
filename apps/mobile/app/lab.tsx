@@ -19,7 +19,11 @@ export default function LabModal() {
 
   // Handle deep link scenario parameter (only once per unique scenario value)
   useEffect(() => {
-    if (params.scenario && params.scenario in scenarios && params.scenario !== appliedScenarioRef.current) {
+    if (
+      params.scenario &&
+      params.scenario in scenarios &&
+      params.scenario !== appliedScenarioRef.current
+    ) {
       appliedScenarioRef.current = params.scenario;
       selectScenario(params.scenario as ScenarioName);
     }

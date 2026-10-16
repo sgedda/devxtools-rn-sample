@@ -190,17 +190,20 @@ export default function TasksScreen() {
     const isDeleting = pendingDeletes.has(task.id);
 
     // Web-only props type
-    const webProps = Platform.OS === 'web' ? {
-      'aria-checked': task.completed,
-      onClick: () => handleToggle(task),
-      onKeyDown: (event: KeyboardEvent) => {
-        if (event.key === ' ' || event.key === 'Enter') {
-          event.preventDefault();
-          handleToggle(task);
-        }
-      },
-      tabIndex: 0 as const,
-    } : {};
+    const webProps =
+      Platform.OS === 'web'
+        ? {
+            'aria-checked': task.completed,
+            onClick: () => handleToggle(task),
+            onKeyDown: (event: KeyboardEvent) => {
+              if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                handleToggle(task);
+              }
+            },
+            tabIndex: 0 as const,
+          }
+        : {};
 
     return (
       <View

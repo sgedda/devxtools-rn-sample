@@ -142,7 +142,7 @@ describe('Request Log Source Logic', () => {
       // cancelQueries, not invalidateQueries, to prevent double GET requests.
       // The actual implementation is in the LabContext selectScenario function
       // which handles resetQueries, and index.tsx only cancels in-flight requests.
-      
+
       const mockQueryClient = {
         cancelQueries: jest.fn(),
         invalidateQueries: jest.fn(),
