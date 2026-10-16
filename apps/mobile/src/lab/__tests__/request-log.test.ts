@@ -118,14 +118,14 @@ describe('Request Log Source Logic', () => {
     it('should support listener registration and cleanup', () => {
       // Test that the callback mechanism works
       let callbackInvoked = false;
-      
+
       setRequestSourceCallback((requestId, source) => {
         callbackInvoked = true;
       });
 
       // Clear callback
       setRequestSourceCallback(null);
-      
+
       // This is a unit test for the mechanism, not the full integration
       expect(callbackInvoked).toBe(false);
     });

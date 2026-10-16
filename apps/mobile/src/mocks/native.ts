@@ -66,7 +66,9 @@ export async function startMocking() {
     }
   };
   server.events.on('request:unhandled', unhandledListener);
-  unsubscribeFunctions.push(() => server.events.removeListener('request:unhandled', unhandledListener));
+  unsubscribeFunctions.push(() =>
+    server.events.removeListener('request:unhandled', unhandledListener)
+  );
 
   const bypassListener = ({ request }: { request: Request }) => {
     const requestId = request.headers.get('x-devx-req-id');
@@ -89,7 +91,7 @@ export async function startMocking() {
 export function stopMocking() {
   server.close();
   requestMap.clear();
-  
+
   // Remove all event listeners
   unsubscribeFunctions.forEach(unsubscribe => unsubscribe());
   unsubscribeFunctions = [];

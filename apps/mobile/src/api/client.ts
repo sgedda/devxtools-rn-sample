@@ -89,10 +89,10 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
   // Generate unique request ID and add as header
   const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
     'x-devx-req-id': requestId,
   };
-  
+
   // Add scenario header if present
   if (contextData.scenario) {
     headers['x-devx-scenario'] = contextData.scenario;
