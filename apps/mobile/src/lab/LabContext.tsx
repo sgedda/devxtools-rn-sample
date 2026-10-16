@@ -11,7 +11,7 @@ import {
   resetMockTasks,
 } from '../mocks/native';
 import { scenarios, type ScenarioName, scenarioLabels } from '../mocks/scenarios';
-import { setRequestLogCallback } from '../api/client';
+import { setRequestLogCallback, setDataSourceGetter } from '../api/client';
 
 export type DataSource = 'real' | 'msw' | 'mockifyer';
 
@@ -121,6 +121,18 @@ export function LabProvider({ children }: { children: ReactNode }) {
     return () => {
       setRequestLogCallback(() => {});
       setRequestSourceCallback(null);
+    };
+  }, []);
+
+  // Wire up data source getter for request stamping
+  useEffect(() => {
+    setDataSourceGetter(() => ({
+      source: dataSourceRef.current,
+      scenario: scenarioRef.current,
+    }));
+
+    return () => {
+      setDataSourceGetter(null);
     };
   }, []);
 

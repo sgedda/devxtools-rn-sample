@@ -193,6 +193,7 @@ export default function TasksScreen() {
 
     return (
       <View
+        accessible={true}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: task.completed }}
         accessibilityLabel={`Task: ${task.title}`}
