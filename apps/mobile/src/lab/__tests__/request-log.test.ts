@@ -101,7 +101,9 @@ describe('Request Log Source Logic', () => {
     });
 
     it('should support requests without scenario', () => {
-      const noScenarioRequest = {
+      const noScenarioRequest: {
+        headers: Record<string, string | undefined>;
+      } = {
         headers: {
           'x-devx-req-id': 'test-456',
         },
