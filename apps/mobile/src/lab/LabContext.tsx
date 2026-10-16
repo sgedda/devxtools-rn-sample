@@ -87,7 +87,11 @@ export function LabProvider({ children }: { children: ReactNode }) {
       }) => {
         // Look up source from requestSourcesRef - it was stamped by MSW events
         const sourceData = requestSourcesRef.current.get(entry.id);
-        const source = sourceData?.source || 'real';
+        // If no MSW event fired, fall back to the current data source setting
+        // When MSW is active, unlabeled requests are still MSW (may be bypassed/unhandled)
+        // When Real is active, unlabeled requests are Real
+        const fallbackSource = dataSourceRef.current === 'msw' ? 'msw' : 'real';
+        const source = sourceData?.source || fallbackSource;
         const handler = sourceData?.handler;
 
         // Delete the entry after consuming it to avoid reuse
