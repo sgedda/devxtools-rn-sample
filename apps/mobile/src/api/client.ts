@@ -34,6 +34,14 @@ export function setRequestLogCallback(callback: RequestLogCallback | null) {
   requestLogCallback = callback;
 }
 
+// Get current data source and scenario for stamping requests
+type DataSourceGetter = () => { source: 'real' | 'msw' | 'mockifyer'; scenario: string | null };
+let dataSourceGetter: DataSourceGetter | null = null;
+
+export function setDataSourceGetter(getter: DataSourceGetter | null) {
+  dataSourceGetter = getter;
+}
+
 function getApiUrl(): string {
   // Use EXPO_PUBLIC_API_URL if set
   const envApiUrl = typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_API_URL : undefined;
